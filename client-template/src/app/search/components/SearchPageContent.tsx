@@ -1,8 +1,7 @@
 "use client";
 
 import logo from "@/public/logo.png";
-import { HeaderLanding } from "@/components/landing-page/header-landing";
-import Footer from "@/components/landing-page/footer";
+
 import { useEffect, useState } from "react";
 import type { ProductData } from "@/types";
 import { useQuery } from "@tanstack/react-query";
@@ -26,7 +25,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ProductCard } from "@/components/landing-page/product-card";
+
 
 export default function SearchPageContent() {
   const [products, setProducts] = useState<ProductData[]>([]);
@@ -182,7 +181,7 @@ export default function SearchPageContent() {
   return (
     <>
       <div className="min-h-screen flex flex-col bg-gray-50">
-        <HeaderLanding logo={logo} />
+        
 
         <div className="container mx-auto px-4 py-8 flex-grow">
           {/* Breadcrumb */}
@@ -385,7 +384,7 @@ export default function SearchPageContent() {
               ) : filteredProducts.length > 0 ? (
                 <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
                   {filteredProducts.map((product) => (
-                    <ProductCard key={product._id} productProps={product} />
+                  <></>
                   ))}
                 </div>
               ) : (
@@ -430,7 +429,7 @@ export default function SearchPageContent() {
           </div>
         </div>
 
-        <Footer />
+    
       </div>
     </>
   );

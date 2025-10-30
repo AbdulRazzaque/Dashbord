@@ -9,9 +9,6 @@ import { ProfileUpdate } from "@/components/user/profile-update";
 import { ProfileDisplay } from "@/components/user/profile-display";
 import { useAuthStore } from "@/store";
 import logo from "@/public/logo.png";
-import { HeaderLanding } from "@/components/landing-page/header-landing";
-import Footer from "@/components/landing-page/footer";
-import { AddAddress } from "../address/components/add-address";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
@@ -25,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { AddressFormValues } from "../address/components/address-form";
+
 import { AxiosError } from "axios";
 
 export default function Page() {
@@ -36,7 +33,7 @@ export default function Page() {
   const [getddressId, setAddressId] = React.useState("");
   const [editingAddress, setEditingAddress] = React.useState<{
     id: string;
-    data: AddressFormValues;
+  
   } | null>(null);
 
   const queryClient = useQueryClient();
@@ -145,7 +142,7 @@ export default function Page() {
 
   return (
     <div className="bg-white">
-      <HeaderLanding logo={logo} />
+  
       <div className="container mx-auto py-8 px-4">
         <>
           {isEditing ? (
@@ -160,13 +157,7 @@ export default function Page() {
           <div className="lg:col-span-8">
             <div className="space-y-4">
               <div className="md:col-span-2 space-y-4 mt-4">
-                <AddAddress
-                  onAdd={() => {
-                    // Address is added via mutation in AddressForm
-                  }}
-                  editingAddress={editingAddress}
-                  onEditComplete={() => setEditingAddress(null)}
-                />
+               
 
                 {/* Address list */}
                 <div className="space-y-4">
@@ -207,7 +198,7 @@ export default function Page() {
                               </>
                             ) : null}
                             <br />
-                            {a.cityDistrict} - {a.pincode}
+                            {a.cityDistrict} 
                             <br />
                             {a.state}, {a.country}
                             <br />
@@ -221,7 +212,7 @@ export default function Page() {
                             <button
                               className="hover:text-foreground"
                               onClick={() =>
-                                setEditingAddress({ id: a.id, data: a })
+                                setEditingAddress({ id: a.id})
                               }
                             >
                               Edit
@@ -259,7 +250,7 @@ export default function Page() {
           </div>
         </>
       </div>
-      <Footer />
+
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
