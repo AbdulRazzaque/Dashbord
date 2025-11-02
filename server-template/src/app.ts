@@ -5,8 +5,10 @@ import { Config } from "./config";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 
 import authRouter from "./routes/auth";
+import dotenv from "dotenv";
 import helmet from "helmet";
 
+dotenv.config();
 const app = express();
 app.use(helmet());
 const ALLOWED_DOMAINS = [Config.FRONTEND_URL];

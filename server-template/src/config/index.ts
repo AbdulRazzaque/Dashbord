@@ -12,6 +12,7 @@ const {
     FRONTEND_URL,
     JWKS_URI,
     REFRESH_SECRET,
+    ACCESS_SECRET,
     MAIN_DOMAIN,
 } = process.env;
 
@@ -22,5 +23,6 @@ export const Config = {
     FRONTEND_URL,
     JWKS_URI,
     REFRESH_SECRET,
+    ACCESS_SECRET,
     MAIN_DOMAIN,
 };
