@@ -3,9 +3,10 @@
 
 import Image from "next/image";
 import bg from "@/public/images/auth/bg-2.jpg";
-import slider1 from "@/public/home-1.png";
-import slider2 from "@/public/home-2.png";
-import slider3 from "@/public/home-4.png";
+// import slider1 from "@/public/home-1.png";
+import logo from "@/public/logo.png"
+// import slider2 from "@/public/home-2.png";
+// import slider3 from "@/public/home-4.png";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -50,33 +51,14 @@ const Page = () => {
               <SwiperSlide>
                 <div className="w-full h-full flex justify-center items-center">
                   <Image
-                    src={slider1}
+                    src={logo}
                     alt="image"
                     className=""
                     priority={true}
                   />
                 </div>
               </SwiperSlide>
-              <SwiperSlide>
-                <div className="w-full h-full flex justify-center items-center">
-                  <Image
-                    src={slider2}
-                    alt="image"
-                    className=""
-                    priority={true}
-                  />
-                </div>
-              </SwiperSlide>
-              <SwiperSlide>
-                <div className="w-full h-full flex justify-center items-center">
-                  <Image
-                    src={slider3}
-                    alt="image"
-                    className=""
-                    priority={true}
-                  />
-                </div>
-              </SwiperSlide>
+           
             </Swiper>
           </div>
           <div className=" px-4  py-5 flex justify-center items-center">

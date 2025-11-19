@@ -18,6 +18,8 @@ import {
   UsersRound,
   Repeat,
   RotateCcw,
+  ClipboardCheck,
+  UserCheck 
 } from "lucide-react";
 
 export interface MenuItemProps {
@@ -51,6 +53,12 @@ export const menusConfig = {
         title: "Category",
         icon: Grid,
         href: "/dashboard/category",
+        requiredRole: [RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN],
+      },
+      {
+        title: "Attendance",
+        icon: UserCheck ,
+        href: "/dashboard/attendance",
         requiredRole: [RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN],
       },
    

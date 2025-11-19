@@ -14,6 +14,9 @@ const {
     REFRESH_SECRET,
     ACCESS_SECRET,
     MAIN_DOMAIN,
+    BIOTIME_URL,
+    BIOTIME_USER,
+    BIOTIME_PASS,
 } = process.env;
 
 export const Config = {
@@ -25,4 +28,7 @@ export const Config = {
     REFRESH_SECRET,
     ACCESS_SECRET,
     MAIN_DOMAIN,
+    BIOTIME_URL,
+    BIOTIME_USER,
+    BIOTIME_PASS,
 };

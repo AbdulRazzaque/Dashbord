@@ -88,7 +88,7 @@ const Page = () => {
     await new Promise((resolve) => setTimeout(resolve, 1500));
     setIsLoading(false);
     toast.success("Password has been updated successfully.");
-    router.push("/login");
+    router.push("/");
   };
 
   return (
@@ -108,7 +108,7 @@ const Page = () => {
               className="w-28"
             />
           </Link>
-          Alnawayath
+          Tharb
         </div>
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">

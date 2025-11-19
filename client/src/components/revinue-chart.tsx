@@ -20,11 +20,11 @@ const RevinueChart = ({ height = 350 }) => {
   const theme = themes.find((theme) => theme.name === config);
   const [series, setData] = useState<Series[]>([
     {
-      name: "Net Profit",
+      name: "Late Employee",
       data: [44, 55, 41, 37, 22, 43, 21, 40, 30, 50, 60, 50],
     },
     {
-      name: "Orders",
+      name: "Absent Employee",
       data: [53, 32, 33, 52, 13, 43, 32, 40, 50, 20, 40, 50],
     },
     {
@@ -46,20 +46,7 @@ const RevinueChart = ({ height = 350 }) => {
     }
   }, [data]);
 
-  // const series = [
-  // {
-  //   name: "Net Profit",
-  //   data: [44, 55, 41, 37, 22, 43, 21, 40, 30, 50, 60, 50],
-  // },
-  // {
-  //   name: "Orders",
-  //   data: [53, 32, 33, 52, 13, 43, 32, 40, 50, 20, 40, 50],
-  // },
-  // {
-  //   name: "Return",
-  //   data: [40, 47, 51, 39, 35, 51, 60, 40, 60, 30, 20, 60],
-  // },
-  // ];
+ 
 
   const options: any = {
     chart: {

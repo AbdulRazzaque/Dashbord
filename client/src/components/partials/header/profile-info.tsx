@@ -51,7 +51,7 @@ const ProfileInfo = () => {
     if (logged.type === "success") {
       logoutSession();
       toast.success("Successfully logged out");
-      router.push("/login");
+      router.push("/");
     }
 
     if (logged.type === "error") {

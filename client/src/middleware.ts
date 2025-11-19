@@ -40,12 +40,12 @@ export async function middleware(request: NextRequest) {
 
   // If trying to access dashboard without token, redirect to login
   if (!token && isDashboardPath) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   // If trying to access protected user routes without token, redirect to login
   if (!token && isProtectedUserRoute) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   // If user role is USER and trying to access dashboard, redirect to unauthorized page
@@ -65,7 +65,6 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/",
-    "/login",
     "/my-orders",
     "/my-orders/:path*",
     "/profile",

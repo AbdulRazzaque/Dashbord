@@ -54,3 +54,30 @@ export interface VerificationToken {
     createdAt: Date;
     role: string;
 }
+
+
+
+export interface BioTimePunch {
+  id: number;
+  emp: number;
+  first_name:string;
+  punch_time: string;
+  punch_state_display?: string;
+  upload_time?: string;
+  [key: string]: any;
+  raw:object
+}
+
+export interface BioTimeResponse<T = any> {
+  data: T[];
+  next: string | null;
+  count?: number;
+}
+
+export interface SearchParams {
+    query?: string;
+    categoryId?: string;
+    role?: string;
+    page?: number;
+    limit?: number;
+}
