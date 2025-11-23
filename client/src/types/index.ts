@@ -10,6 +10,17 @@ export interface BioTimePunch {
   [key: string]: any;
 }
 
+export interface AttendanceSummaryRow {
+  id: number;
+  emp: number;
+  name: string;
+  checkIn: string | null | Date;
+  checkOut: string | null | Date;
+  totalMinutes: number;
+  netMinutes: number;
+  status: string; // Present | Late | Out | Early Out | Unknown
+}
+
 
 
 

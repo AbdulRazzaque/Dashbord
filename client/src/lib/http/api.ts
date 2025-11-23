@@ -40,5 +40,21 @@ export const getTodayAttendance = (
   });
 };
 
+export const getTodayAttendanceSummary = (
+  page: number,
+  limit: number,
+  search?: string,
+  state?: string
+) => {
+  return api.get(`/api/fetch-today-summary`, {
+    params: {
+      page,
+      limit,
+      ...(search ? { search } : {}),
+      ...(state ? { state } : {}),
+    },
+  });
+};
+
 export const searchEmployee = (search: string, filter: string) =>
   api.post(`/api/employee/search/?q=${search}&filter=${filter}`);

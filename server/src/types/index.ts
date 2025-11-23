@@ -81,3 +81,33 @@ export interface SearchParams {
     page?: number;
     limit?: number;
 }
+
+
+export interface AttendanceRow {
+  id: string;                // employee key (emp or emp_code)
+  name: string;              // first name (or 'Unknown')
+  date: string | null;       // YYYY-MM-DD or null
+  checkIn: Date | null;      // ISO date (server returns Date)
+  checkOut: Date | null;     // ISO date
+  totalHours: number;        // decimal hours rounded to 2 decimals
+}
+
+export interface FetchTodaySummaryResult {
+  ok: boolean;
+  page: number;
+  limit: number;
+  total: number;
+  data: AttendanceRow[];
+}
+
+// Rich, per-employee daily summary for UI tables
+export interface PunchSummaryDTO {
+  id: number;           // employee numeric id (emp)
+  emp: number;          // same as id for clarity
+  name: string;         // employee name
+  checkIn: Date | null; // first check-in time
+  checkOut: Date | null;// last check-out time
+  totalMinutes: number; // minutes between first and last event
+  netMinutes: number;   // equals totalMinutes (no break calculation)
+  status: string;       // Present | Late | Out | Early Out | Unknown
+}

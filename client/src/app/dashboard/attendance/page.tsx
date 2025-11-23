@@ -15,10 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import AttendanceTable from '@/components/attendance/attendance-table'
+import AttendanceSummaryTable from '@/components/attendance/attendance-summary-table'
 import { useQuery } from '@tanstack/react-query';
-
-import { getTodayAttendance } from '@/lib/http/api';
+import { getTodayAttendanceSummary } from '@/lib/http/api';
+import { AttendanceSummaryRow } from '@/types';
 
 interface TodayAttendanceResponse {
   ok: boolean;
@@ -26,7 +26,7 @@ interface TodayAttendanceResponse {
   page: number;
   limit: number;
   total: number;
-  data: any[];
+  data: AttendanceSummaryRow[];
 }
 
 const AttendancePage = () => {
@@ -41,15 +41,15 @@ const AttendancePage = () => {
       const router = useRouter();
   
   const { data, isLoading } = useQuery<TodayAttendanceResponse>({
-    queryKey: ["getTodayAttendance", page, rowsPerPage, search, stateFilter === "ALL" ? "" : stateFilter],
+    queryKey: ["getTodayAttendanceSummary", page, rowsPerPage, search, stateFilter === "ALL" ? "" : stateFilter],
     queryFn: async () => {
       const effectiveStateFilter = (stateFilter === "ALL" || stateFilter === "") ? undefined : stateFilter;
-      const res = await getTodayAttendance(page, rowsPerPage, search || undefined, effectiveStateFilter);
+      const res = await getTodayAttendanceSummary(page, rowsPerPage, search || undefined, effectiveStateFilter);
       return res.data;
     },
   });
 
-  const punches = Array.isArray(data?.data) ? data!.data : [];
+  const rows = Array.isArray(data?.data) ? data!.data : [];
   const total = data?.total || 0;
 
   
@@ -72,10 +72,11 @@ const AttendancePage = () => {
                 <SelectValue placeholder="State filter" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">All States</SelectItem>
-                <SelectItem value="Check In">Check In</SelectItem>
-                <SelectItem value="Check Out">Check Out</SelectItem>
-                <SelectItem value="Break">Break</SelectItem>
+                <SelectItem value="ALL">All Status</SelectItem>
+                <SelectItem value="Present">Present</SelectItem>
+                <SelectItem value="Late">Late</SelectItem>
+                <SelectItem value="Out">Out</SelectItem>
+                <SelectItem value="Early Out">Early Out</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -97,8 +98,8 @@ const AttendancePage = () => {
             </Select>
           </div>
         </div>
-        <AttendanceTable
-          data={punches}
+        <AttendanceSummaryTable
+          data={rows}
           isLoading={isLoading}
           page={page}
           setPage={setPage}

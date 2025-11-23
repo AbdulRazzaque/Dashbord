@@ -5,7 +5,7 @@ import { asyncWrapper } from "../../utils/wrapper";
 import logger from "../config/logger";
 import { PunchService } from "../services/punchService";
 
-const punchService = new PunchService
+const punchService = new PunchService();
 const punchController = new PunchController(
     logger,
     punchService
@@ -16,6 +16,12 @@ router.get(
     "/fetch-today",
     authenticate,
     asyncWrapper(punchController.fetchToday),
+);
+
+router.get(
+    "/fetch-today-summary",
+    authenticate,
+    asyncWrapper(punchController.fetchTodaySummary),
 );
 
 router.post(
