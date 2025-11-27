@@ -2,11 +2,10 @@
 
 import BreadCrumb from '@/components/ui/breadcrumb';
 import { Card } from '@/components/ui/card';
-import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react'
+import React, {useState } from 'react'
 import { Input } from "@/components/ui/input";
-import { Button } from 'react-day-picker';
+
 
 import {
   Select,
@@ -18,16 +17,9 @@ import {
 import AttendanceSummaryTable from '@/components/attendance/attendance-summary-table'
 import { useQuery } from '@tanstack/react-query';
 import { getTodayAttendanceSummary } from '@/lib/http/api';
-import { AttendanceSummaryRow } from '@/types';
+import { TodayAttendanceResponse } from '@/types';
 
-interface TodayAttendanceResponse {
-  ok: boolean;
-  saved: number;
-  page: number;
-  limit: number;
-  total: number;
-  data: AttendanceSummaryRow[];
-}
+
 
 const AttendancePage = () => {
       const breadcrumbItems = [
@@ -99,7 +91,7 @@ const AttendancePage = () => {
           </div>
         </div>
         <AttendanceSummaryTable
-          data={rows}
+          data={rows|| []}
           isLoading={isLoading}
           page={page}
           setPage={setPage}

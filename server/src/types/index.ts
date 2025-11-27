@@ -59,7 +59,7 @@ export interface VerificationToken {
 
 export interface BioTimePunch {
   id: number;
-  emp: number;
+  emp_code: number;
   first_name:string;
   punch_time: string;
   punch_state_display?: string;
@@ -83,31 +83,29 @@ export interface SearchParams {
 }
 
 
-export interface AttendanceRow {
-  id: string;                // employee key (emp or emp_code)
-  name: string;              // first name (or 'Unknown')
-  date: string | null;       // YYYY-MM-DD or null
-  checkIn: Date | null;      // ISO date (server returns Date)
-  checkOut: Date | null;     // ISO date
-  totalHours: number;        // decimal hours rounded to 2 decimals
+
+export interface FetchPunchesOptions {
+  start_time?: string;
+  end_time?: string;
+  page_size?: number;
+  maxPages?: number;
 }
 
-export interface FetchTodaySummaryResult {
-  ok: boolean;
-  page: number;
-  limit: number;
-  total: number;
-  data: AttendanceRow[];
+export interface TimeStatus {
+  time: string;
+  status: string;
 }
 
-// Rich, per-employee daily summary for UI tables
-export interface PunchSummaryDTO {
-  id: number;           // employee numeric id (emp)
-  emp: number;          // same as id for clarity
-  name: string;         // employee name
-  checkIn: Date | null; // first check-in time
-  checkOut: Date | null;// last check-out time
-  totalMinutes: number; // minutes between first and last event
-  netMinutes: number;   // equals totalMinutes (no break calculation)
-  status: string;       // Present | Late | Out | Early Out | Unknown
-}
+export interface EmployeeDay {
+      employeeId: number;
+      name: string;
+      department: string;
+      position: string;
+      date: string;
+      checkIn: TimeStatus | null;
+      checkOut: TimeStatus | null;
+      totalHours: number;
+      raw:object;
+    }
+
+

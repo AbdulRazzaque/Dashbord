@@ -46,7 +46,7 @@ export const getTodayAttendanceSummary = (
   search?: string,
   state?: string
 ) => {
-  return api.get(`/api/fetch-today-summary`, {
+  return api.get(`/api/hours`, {
     params: {
       page,
       limit,

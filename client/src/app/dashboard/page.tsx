@@ -6,17 +6,16 @@ import EcommerceStats from "@/components/ecommerce-stats";
 import RevinueChart from "@/components/revinue-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
-import { getOrdersCount } from "@/lib/http/api";
+
 import { useEffect, useState } from "react";
-import { Counts } from "@/types";
+// import { Counts } from "@/types";
+import AttendanceSummaryTable from "@/components/attendance/attendance-summary-table";
+import { data } from "@/components/top-customers/data";
+import { TodayAttendanceResponse } from "@/types";
+import { getTodayAttendanceSummary } from "@/lib/http/api";
 
 const Page = () => {
-  const [getData, setData] = useState<Counts>({
-    totalSales: 0,
-    todaysOrders: 0,
-    completedOrders: 0,
-    pendingOrders: 0,
-  });
+
 
   const currentDate = new Date();
   const startOfDay = new Date(currentDate);
@@ -26,20 +25,35 @@ const Page = () => {
   const [startDate, setStartDate] = useState(startOfDay);
   const [endDate, setEndDate] = useState(endOfDay);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["getOrdersCount", endDate], // Depend on endDate
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [page, setPage] = useState(1);
+  // Use a non-empty sentinel value ("ALL") instead of empty string for Radix Select
+  const [stateFilter, setStateFilter] = useState("");
+  const [search, setSearch] = useState("");
+
+  const { data, isLoading } = useQuery<TodayAttendanceResponse>({
+    queryKey: [
+      "getTodayAttendanceSummary",
+      page,
+      rowsPerPage,
+      search,
+      stateFilter === "ALL" ? "" : stateFilter,
+    ],
     queryFn: async () => {
-      return await getOrdersCount({ endDate, startDate }).then(
-        (res) => res.data
+      const effectiveStateFilter =
+        stateFilter === "ALL" || stateFilter === "" ? undefined : stateFilter;
+      const res = await getTodayAttendanceSummary(
+        page,
+        rowsPerPage,
+        search || undefined,
+        effectiveStateFilter
       );
+      return res.data;
     },
   });
 
-  useEffect(() => {
-    if (data) {
-      setData(data);
-    }
-  }, [data]);
+  const rows = Array.isArray(data?.data) ? data!.data : [];
+  const total = data?.total || 0;
 
   return (
     <div className="space-y-6">
@@ -56,7 +70,7 @@ const Page = () => {
       <Card>
         <CardContent className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <EcommerceStats data={getData} />
+            <EcommerceStats data={1} />
           </div>
         </CardContent>
       </Card>
@@ -80,7 +94,15 @@ const Page = () => {
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12">
-        
+        <AttendanceSummaryTable
+          data={rows|| []}
+          isLoading={isLoading}
+          page={page}
+          setPage={setPage}
+          rowsPerPage={rowsPerPage}
+          totalEmployee={total}
+        />
+
         </div>
       </div>
     </div>

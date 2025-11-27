@@ -1,16 +1,7 @@
 "use client";
+import { SummaryRow } from "@/types";
 import React from "react";
 
-type SummaryRow = {
-  id: number;
-  emp: number;
-  name: string;
-  checkIn: string | null | Date;
-  checkOut: string | null | Date;
-  totalMinutes: number;
-  netMinutes: number;
-  status: string;
-};
 
 interface Props {
   data: SummaryRow[];
@@ -21,17 +12,15 @@ interface Props {
   totalEmployee?: number;
 }
 
-const toDate = (v: string | Date | null) => (v ? new Date(v) : null);
-const formatTime = (v: string | Date | null) => {
-  const d = toDate(v);
-  return d ? d.toLocaleTimeString() : "-";
-};
+
+
 const formatHours = (minutes: number) => {
   const m = Math.max(0, Math.round(minutes));
   const h = Math.floor(m / 60);
   const rem = m % 60;
   return `${h}h ${rem}m`;
 };
+
 const getStatusColor = (status: string) => {
   switch (status) {
     case "Present":
@@ -48,13 +37,14 @@ const getStatusColor = (status: string) => {
 };
 
 export default function AttendanceSummaryTable({
-  data,
+  data = [],
   isLoading,
   page = 1,
   setPage,
   rowsPerPage = 10,
   totalEmployee = 0,
 }: Props) {
+
   return (
     <div className="w-full">
       <div className="overflow-x-auto">
@@ -62,7 +52,13 @@ export default function AttendanceSummaryTable({
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Employee
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Employee ID
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Check In/Out
@@ -70,9 +66,7 @@ export default function AttendanceSummaryTable({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Total Hours
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Net Hours
-              </th>
+              
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
@@ -89,39 +83,59 @@ export default function AttendanceSummaryTable({
               </tr>
             ) : (
               data.map((employee) => (
-                <tr key={employee.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={`${employee.id}-${employee.date}`} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{employee.date}</div>
+                    </div>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">{employee.name}</div>
-                      {/* position removed per new requirements */}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{employee.employeeId}</div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900 space-y-1">
                       <div className="flex items-center space-x-1">
                         <span className="text-green-600">●</span>
-                        <span>In: {formatTime(employee.checkIn)}</span>
+                        <span>In: {employee.checkIn?.time || "-"}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <span className="text-red-600">●</span>
-                        <span>Out: {formatTime(employee.checkOut)}</span>
+                        <span>Out: {employee.checkOut?.time || "-"}</span>
                       </div>
                       {/* Late badge omitted; status covers it */}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatHours(employee.totalMinutes)}
+                    {formatHours(employee.totalHours)}
                   </td>
+                 
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold text-gray-900">
-                      {formatHours(employee.netMinutes)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(employee.status)}`}>
-                      {employee.status}
-                    </span>
-                  </td>
+
+                {/* Check-In Status */}
+                <div 
+                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(employee?.checkIn?.status || "No Status")}`}
+                >
+                  {employee?.checkIn?.status || "No Check-In"}
+                </div>
+
+                {/* Gap */}
+                <div className="my-1"></div>
+
+                {/* Check-Out Status */}
+                <div 
+                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(employee?.checkOut?.status || "No Status")}`}
+                >
+                  {employee?.checkOut?.status }
+                </div>
+
+              </td>
                 </tr>
               ))
             )}

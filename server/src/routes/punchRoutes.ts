@@ -17,12 +17,13 @@ router.get(
     authenticate,
     asyncWrapper(punchController.fetchToday),
 );
-
 router.get(
-    "/fetch-today-summary",
+    "/hours",
     authenticate,
-    asyncWrapper(punchController.fetchTodaySummary),
+    asyncWrapper(punchController.fetchHours),
 );
+
+
 
 router.post(
     "/webhook/punch",

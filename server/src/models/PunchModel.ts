@@ -11,7 +11,7 @@ export interface IPunch extends Document, Omit<BioTimePunch, "punch_time" | "upl
 const punchSchema = new Schema<IPunch>(
   {
     id: { type: Number, unique: true, required: true, index: true },
-    emp: Number,
+    emp_code: Number,
     first_name:String,
     punch_time: Date,
     punch_state_display: String,
