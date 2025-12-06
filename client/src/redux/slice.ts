@@ -68,30 +68,30 @@ export const cartSlice = createSlice({
     ) => {
       const product = action.payload;
       const quantity = action.payload.quantity || 1;
-      const variant = product.variants[0];
+      const variant = product.variants?.[0];
 
-      const attributes = variant.attributes.map((attr) => ({
+      const attributes = variant?.attributes?.map((attr: any) => ({
         id: attr.attributeId._id,
         name: attr.attributeId.name,
         value: attr.value,
-      }));
+      })) || [];
 
-      const size = attributes.find((attr) => attr.name === "Size")?.value || "";
+      const size = attributes.find((attr: any) => attr.name === "Size")?.value || "";
       const color =
-        attributes.find((attr) => attr.name === "Color")?.value || "";
+        attributes.find((attr: any) => attr.name === "Color")?.value || "";
 
       // Check if this is a set variant
-      const isSet = variant.setDetails?.isSet || false;
-      const setSize = variant.setDetails?.setSize;
-      const setLabel = variant.setDetails?.setLabel;
-      const distribution = variant.setDetails?.distribution;
+      const isSet = variant?.setDetails?.isSet || false;
+      const setSize = variant?.setDetails?.setSize;
+      const setLabel = variant?.setDetails?.setLabel;
+      const distribution = variant?.setDetails?.distribution;
 
       // Create unique ID based on whether it's a set or individual item
       const itemId = isSet
         ? `${product._id}-set-${setSize}`
         : `${product._id}-${size}-${color}`;
 
-      const price = variant.rate;
+      const price = variant?.rate || 0;
       const total = price * quantity;
 
       const existingItem = state.items.find((item) => item.id === itemId);
@@ -105,15 +105,15 @@ export const cartSlice = createSlice({
           productId: product._id,
           name: product.name,
           price,
-          originalPrice: variant.mrp,
+          originalPrice: variant?.mrp || 0,
           quantity,
           total,
           image: product.featureImg,
           size,
           color,
-          sku: variant.sku || "",
-          discount: variant.discount || 0,
-          availableStock: variant.quantity,
+          sku: variant?.sku || "",
+          discount: variant?.discount || 0,
+          availableStock: variant?.quantity || 0,
           attributes,
           // Add set-specific data
           isSet,
@@ -153,7 +153,7 @@ export const cartSlice = createSlice({
     // Add to wishlist action
     addToWishlist: (state, action: PayloadAction<ProductData>) => {
       const product = action.payload;
-      const variant = product.variants[0];
+      const variant = product.variants?.[0];
 
       // Check if the product is already in the wishlist
       const exists = state.wishlist.some(
@@ -165,10 +165,10 @@ export const cartSlice = createSlice({
           id: `wishlist-${product._id}`,
           productId: product._id,
           name: product.name,
-          price: variant.rate,
-          originalPrice: variant.mrp,
+          price: variant?.rate || 0,
+          originalPrice: variant?.mrp || 0,
           image: product.featureImg,
-          discount: variant.discount || 0,
+          discount: variant?.discount || 0,
         });
       }
     },

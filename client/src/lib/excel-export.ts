@@ -15,14 +15,14 @@ export const exportOrdersToExcel = (orders: Order[], filename = "orders") => {
       ? `${order.deliveryPersonId.firstName} ${order.deliveryPersonId.lastName}`
       : "Not Assigned",
     Address: `${order.address.flatBuildingCompany}, ${order.address.streetArea}, ${order.address.state}, ${order.address.pincode}, ${order.address.country}`,
-    "Order Date": new Date(order.createdAt).toLocaleDateString(),
-    "Created At": new Date(order.createdAt).toLocaleString(),
-    "Updated At": new Date(order.updatedAt).toLocaleString(),
+    "Order Date": order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A",
+    "Created At": order.createdAt ? new Date(order.createdAt).toLocaleString() : "N/A",
+    "Updated At": order.updatedAt ? new Date(order.updatedAt).toLocaleString() : "N/A",
     "Is Active": order.isActive ? "Yes" : "No",
     "Items Count": order.details.length,
     "Items Details": order.details
       .map(
-        (item) =>
+        (item: any) =>
           `${item.productId.name} (Qty: ${item.quantity}, Price: SAR ${item.price})`
       )
       .join("; "),

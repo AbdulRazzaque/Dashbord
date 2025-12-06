@@ -1,9 +1,68 @@
+import { bioGet } from "../bioClient";
+import { EmployeeDayModel } from "../models/EmployeeDay";
 import PunchModel from "../models/PunchModel";
-import { SearchParams } from "../types";
+import { IEmployee, SearchParams, BioTimeResponse } from "../types";
 
 export class EmployeeService{
 
+async getEmployees() {
+  let allEmployees: IEmployee[] = [];
+  let nextUrl: string | null = "/personnel/api/employee/";
 
+  while (nextUrl) {
+    const res: BioTimeResponse<IEmployee> = await bioGet(nextUrl);
+    allEmployees = allEmployees.concat(res.data);
+    nextUrl = res.next;
+  }
+
+  // Merge local DB exclude status
+  const finalList = await Promise.all(
+    allEmployees.map(async (emp) => {
+      const employeeId = emp.emp_code ? Number(emp.emp_code) : null;
+
+      const record = employeeId ? await EmployeeDayModel.findOne({ employeeId }) : null;
+
+      return {
+        ...emp,
+        employeeId, // Add employeeId field for frontend
+        isExcluded: record?.isExcluded ?? false, // better null-safe operator
+      };
+    })
+  );
+
+  return {
+    count: finalList.length,
+    data: finalList,
+  };
+}
+
+async getSingleEmployee(employeeId: any) {
+
+    const query = { employeeId: Number(employeeId) };
+
+    return await EmployeeDayModel.find(query);
+}
+    
+
+async isExclude(empCode: number) {
+
+  // Find by employeeId (not emp_code)
+  let employee = await EmployeeDayModel.findOne({ employeeId: empCode });
+
+  // If employee doesn't exist in DB, create a new record
+  if (!employee) {
+    employee = new EmployeeDayModel({
+      employeeId: empCode,
+      isExcluded: true, // Set to true on first exclusion
+    });
+  } else {
+    // Toggle if exists
+    employee.isExcluded = !employee.isExcluded;
+  }
+  
+  await employee.save();
+  return employee;
+}
 
  async searchEmployees({
   query = "",

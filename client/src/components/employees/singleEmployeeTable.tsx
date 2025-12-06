@@ -42,7 +42,7 @@ const getStatusColor = (status: string) => {
   }
 };
 
-export default function AttendanceSummaryTable({
+export default function getSingleEmployeeTable({
   data = [],
   isLoading,
   page = 1,

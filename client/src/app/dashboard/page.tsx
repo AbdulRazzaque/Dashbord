@@ -7,13 +7,20 @@ import RevinueChart from "@/components/revinue-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 // import { Counts } from "@/types";
 import AttendanceSummaryTable from "@/components/attendance/attendance-summary-table";
-import { data } from "@/components/top-customers/data";
-import { TodayAttendanceResponse } from "@/types";
 import { getTodayAttendanceSummary } from "@/lib/http/api";
+import { SummaryRow } from "@/types";
+import { Input } from "@/components/ui/input";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 const Page = () => {
 
 
@@ -30,30 +37,51 @@ const Page = () => {
   // Use a non-empty sentinel value ("ALL") instead of empty string for Radix Select
   const [stateFilter, setStateFilter] = useState("");
   const [search, setSearch] = useState("");
-
-  const { data, isLoading } = useQuery<TodayAttendanceResponse>({
-    queryKey: [
-      "getTodayAttendanceSummary",
-      page,
-      rowsPerPage,
-      search,
-      stateFilter === "ALL" ? "" : stateFilter,
-    ],
-    queryFn: async () => {
-      const effectiveStateFilter =
-        stateFilter === "ALL" || stateFilter === "" ? undefined : stateFilter;
-      const res = await getTodayAttendanceSummary(
-        page,
-        rowsPerPage,
-        search || undefined,
-        effectiveStateFilter
-      );
-      return res.data;
-    },
-  });
-
-  const rows = Array.isArray(data?.data) ? data!.data : [];
-  const total = data?.total || 0;
+ const [filter, setFilter] = useState("all");
+  const { data, isLoading } = useQuery<SummaryRow[]>({
+      queryKey: [
+        "getTodayAttendanceSummary"],
+      queryFn: async () => {
+      
+        const res = await getTodayAttendanceSummary(
+  
+        );
+        return res.data.data;
+      },
+    });
+  
+  
+  
+   const employees = data || [];
+  
+    // ⭐ frontend filtering + searching
+    const filteredEmployees = useMemo(() => {
+      let result = [...employees];
+  
+      // search filter
+      if (search.trim()) {
+    const s = search.toLowerCase();
+  
+    result = result.filter((emp) =>
+      emp.name.toLowerCase().includes(s) ||
+      String(emp.employeeId).toLowerCase().includes(s)
+    );
+  }
+  
+  
+      // status filter
+     if (filter !== "all") {
+    result = result.filter(emp => {
+      const inStatus = emp?.checkIn?.status;
+      const outStatus = emp?.checkOut?.status;
+  
+      return inStatus === filter || outStatus === filter;
+    });
+  }
+  
+  
+      return result;
+    }, [employees, search, filter]);
 
   return (
     <div className="space-y-6">
@@ -70,7 +98,7 @@ const Page = () => {
       <Card>
         <CardContent className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <EcommerceStats data={1} />
+            <EcommerceStats data={{ totalSales: 0, todaysOrders: 0, completedOrders: 0, pendingOrders: 0 }} />
           </div>
         </CardContent>
       </Card>
@@ -94,14 +122,41 @@ const Page = () => {
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12">
-        <AttendanceSummaryTable
-          data={rows|| []}
+          <Card>
+             <div className="p-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Input
+              placeholder="Search Employee Name..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-64"
+            />
+            <Select value={filter} onValueChange={setFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="State filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="Present">Present</SelectItem>
+                <SelectItem value="Late">Late</SelectItem>
+                <SelectItem value="Checkout">Checkout</SelectItem>
+                <SelectItem value="Early Out">Early Out</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+         
+        </div>
+        <CardContent className="p-4">
+      <AttendanceSummaryTable
+          data={filteredEmployees|| []}
           isLoading={isLoading}
           page={page}
           setPage={setPage}
           rowsPerPage={rowsPerPage}
-          totalEmployee={total}
+          totalEmployee={0}
         />
+        </CardContent>
+      </Card>
 
         </div>
       </div>

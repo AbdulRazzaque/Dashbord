@@ -4,6 +4,7 @@ import { EmployeeDay } from "../types";
 const EmployeeDaySchema = new Schema <EmployeeDay>({
   employeeId: Number,
   name: String,
+  isExcluded: { type: Boolean, default: false },
   department: String,
   position: String,
   date: String,
@@ -15,6 +16,7 @@ const EmployeeDaySchema = new Schema <EmployeeDay>({
     time: String,
     status: String,
   },
+  
   totalHours: Number,
    raw: Object,
 });

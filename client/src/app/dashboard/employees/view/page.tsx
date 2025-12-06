@@ -1,10 +1,14 @@
 "use client";
 
-import BreadCrumb from "@/components/ui/breadcrumb";
+import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
-import React, { useMemo, useState } from "react";
+
+import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
+import BreadCrumb from "@/components/ui/breadcrumb";
+import { getSingleEmployee } from "@/lib/http/api";
+import SingleEmployeeTable from "@/components/employees/singleEmployeeTable";
 
 import {
   Select,
@@ -13,37 +17,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import AttendanceSummaryTable from "@/components/attendance/attendance-summary-table";
-import { useQuery } from "@tanstack/react-query";
-import { getTodayAttendanceSummary } from "@/lib/http/api";
-import {  SummaryRow, } from "@/types";
-
-const AttendancePage = () => {
-  const breadcrumbItems = [
-    { title: "Attendance", link: "/dashboard/attendance" },
-  ];
-
-
+export default function Page() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
-  const router = useRouter();
+  const params = useSearchParams();
+  const id = params.get("id");
 
-  const { data, isLoading } = useQuery<SummaryRow[]>({
-    queryKey: [
-      "getTodayAttendanceSummary"],
+  const { data, isLoading } = useQuery({
+    queryKey: ["getSingleEmployee", id],
     queryFn: async () => {
-    
-      const res = await getTodayAttendanceSummary(
-
-      );
-      return res.data.data;
+      return await getSingleEmployee(id!).then((res) => res.data);
     },
   });
 
-
-
- const employees = data || [];
+const employees = data || [];
 
   // ⭐ frontend filtering + searching
   const filteredEmployees = useMemo(() => {
@@ -74,21 +62,21 @@ const AttendancePage = () => {
     return result;
   }, [employees, search, filter]);
 
+  const breadcrumbItems = [
+    { title: "Employees", link: "/dashboard/employees" },
+    { title: "Employee Details", link: "#" },
+  ];
+
   return (
-    <>
-      <div className="flex items-center justify-between py-5">
-        <BreadCrumb items={breadcrumbItems} />
-      </div>
-      <Card>
-        <div className="p-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Input
-              placeholder="Search Employee Name..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-64"
-            />
-            <Select value={filter} onValueChange={setFilter}>
+    <div className="container mx-auto py-6 px-4">
+      <BreadCrumb items={breadcrumbItems} />
+
+      <div className="space-y-6">
+        <Card>
+          <div className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+             
+              <Select value={filter} onValueChange={setFilter}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="State filter" />
               </SelectTrigger>
@@ -100,18 +88,18 @@ const AttendancePage = () => {
                 <SelectItem value="Early Out">Early Out</SelectItem>
               </SelectContent>
             </Select>
+            </div>
           </div>
-         
-        </div>
-        <AttendanceSummaryTable
-          data={filteredEmployees || []}
-          isLoading={isLoading }
-          page={page}
-          setPage={setPage}
-          totalEmployee={0}
-        />
-      </Card>
-    </>
+
+          <SingleEmployeeTable
+            data={filteredEmployees}
+            isLoading={isLoading}
+            page={page}
+            setPage={setPage}
+            totalEmployee={filteredEmployees.length}
+          />
+        </Card>
+      </div>
+    </div>
   );
-};
-export default AttendancePage;
+}

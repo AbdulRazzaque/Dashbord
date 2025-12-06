@@ -1,10 +1,19 @@
 import { NextFunction, Request, Response } from "express";
-import { bioGet } from "../bioClient";
+
 import { Request as AuthRequest } from "express-jwt";
 import { Logger } from "winston";
 
 import { SearchParams } from "../types";
-import { EmployeeService } from "../services/employeeService";
+import { EmployeeService } from "../services/EmployeeService";
+
+interface ErrorResponse {
+  response?: {
+    status?: number;
+    data?: any;
+  };
+  message?: string;
+}
+
 
 
 export class EmployeeController {
@@ -15,22 +24,67 @@ export class EmployeeController {
 
   ){}
 
-  getEmployees = async (req: Request, res: Response) => {
+getEmployees = async (req: Request, res: Response) => {
   try {
-    const data = await bioGet("/personnel/api/employee/", req.query);
-    res.json(data);
-  } catch (err: any) {
-    this.logger.error("Error fetching employees:", err);
+    const data = await this.EmployeeService.getEmployees();
+
+    res.json({
+      ok: true,
+      count: data.count,
+      data: data.data,
+    });
+
+  } catch (err) {
     
-    // Handle axios errors and other errors safely
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const statusCode = err.response?.status || 500;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const responseData = err.response?.data;
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    
-    res.status(statusCode).json(responseData || { message });
+    const errorObj = err as ErrorResponse;
+    const status = errorObj?.response?.status || 500;
+    const errorData = errorObj?.response?.data || { message: errorObj?.message || 'Unknown error' };
+    res.status(status).json(errorData);
   }
+};
+
+getSingleEmployee = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    const { id } = req.params;
+
+    try {
+        const data = await this.EmployeeService.getSingleEmployee(id);
+        res.status(200).json(data); 
+    } catch (error) {
+        return next(error);
+    }
+};
+
+
+excludeToggle = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;
+       
+       if (!id || id === 'undefined') 
+        {
+          return res.status(400).json({ errors: [{ msg: "Missing or invalid id param" }] });
+      }
+      const employeeId = Number(id);
+      
+      if (isNaN(employeeId)) {
+          return res.status(400).json({ errors: [{ msg: "Invalid employee ID format" }] });
+      }
+      
+        const employee = await this.EmployeeService.isExclude(employeeId);
+
+        res.status(200).json({
+             message: `Employee ${employee.isExcluded ? "Excluded" : "Un-Excluded"} successfully`,
+            status: employee.isExcluded,
+             data: { emp_code: employee._id }
+        });
+
+    } catch (error) {
+        this.logger.error("Error in exclude toggle", { error });
+        next(error);
+    }
 };
 
   searchEmployee = async (

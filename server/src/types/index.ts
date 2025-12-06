@@ -71,6 +71,7 @@ export interface BioTimePunch {
 export interface BioTimeResponse<T = any> {
   data: T[];
   next: string | null;
+  previous:string
   count?: number;
 }
 
@@ -106,6 +107,13 @@ export interface EmployeeDay {
       checkOut: TimeStatus | null;
       totalHours: number;
       raw:object;
+      isExcluded:boolean;
     }
 
+export interface IEmployee {
+  id: number;
+  emp_code: string;
+  first_name: string;
+  hire_date: string | null;
+}
 

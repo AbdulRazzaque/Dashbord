@@ -22,6 +22,11 @@ router.get(
     authenticate,
     asyncWrapper(punchController.fetchHours),
 );
+router.get(
+    "/search/dash",
+    authenticate,
+    asyncWrapper(punchController.searchEmployeeDash),
+);
 
 
 
@@ -30,4 +35,7 @@ router.post(
     authenticate,
     asyncWrapper(punchController.webhookPunch),
 );
+
+
+
 export default router;

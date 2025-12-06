@@ -5,45 +5,35 @@ import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import AttendanceSummaryTable from "@/components/attendance/attendance-summary-table";
 import { useQuery } from "@tanstack/react-query";
-import { getTodayAttendanceSummary } from "@/lib/http/api";
-import {  SummaryRow, } from "@/types";
+import { getEmployees } from "@/lib/http/api";
+import { EmployeeInfo, } from "@/types";
+import EmployeeTable from "@/components/employees/employee-tabel";
 
 const AttendancePage = () => {
   const breadcrumbItems = [
-    { title: "Attendance", link: "/dashboard/attendance" },
+    { title: "Employees", link: "/dashboard/employees" },
   ];
-
-
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const router = useRouter();
 
-  const { data, isLoading } = useQuery<SummaryRow[]>({
+  const { data, isLoading } = useQuery<EmployeeInfo[]>({
     queryKey: [
-      "getTodayAttendanceSummary"],
+      "getEmployees"],
     queryFn: async () => {
     
-      const res = await getTodayAttendanceSummary(
+      const res = await getEmployees(
 
       );
       return res.data.data;
     },
   });
+  
+  const employees = data || [];
 
-
-
- const employees = data || [];
 
   // ⭐ frontend filtering + searching
   const filteredEmployees = useMemo(() => {
@@ -54,25 +44,12 @@ const AttendancePage = () => {
   const s = search.toLowerCase();
 
   result = result.filter((emp) =>
-    emp.name.toLowerCase().includes(s) ||
-    String(emp.employeeId).toLowerCase().includes(s)
+    emp.first_name.toLowerCase().includes(s) ||    String(emp.employeeId).toLowerCase().includes(s)
   );
 }
-
-
-    // status filter
-   if (filter !== "all") {
-  result = result.filter(emp => {
-    const inStatus = emp?.checkIn?.status;
-    const outStatus = emp?.checkOut?.status;
-
-    return inStatus === filter || outStatus === filter;
-  });
-}
-
-
-    return result;
-  }, [employees, search, filter]);
+   return result;
+  }, [employees, search]);
+ 
 
   return (
     <>
@@ -88,26 +65,16 @@ const AttendancePage = () => {
               onChange={(e) => setSearch(e.target.value)}
               className="w-64"
             />
-            <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="State filter" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Present">Present</SelectItem>
-                <SelectItem value="Late">Late</SelectItem>
-                <SelectItem value="Checkout">Checkout</SelectItem>
-                <SelectItem value="Early Out">Early Out</SelectItem>
-              </SelectContent>
-            </Select>
+          
           </div>
          
         </div>
-        <AttendanceSummaryTable
+        <EmployeeTable
           data={filteredEmployees || []}
           isLoading={isLoading }
           page={page}
           setPage={setPage}
+          rowsPerPage={rowsPerPage}
           totalEmployee={0}
         />
       </Card>

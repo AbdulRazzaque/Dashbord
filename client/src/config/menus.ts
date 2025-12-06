@@ -2,24 +2,7 @@
 
 import { RolesEnum, RoleType } from "@/constants";
 import {
-  LayoutDashboard,
-  PackageSearch,
-  Tags,
-  Briefcase,
-  ShoppingCart,
-  Truck,
-  BarChart3,
-  Grid,
-  ListTree,
-  Store,
-  MapPin,
-  User,
-  Lightbulb,
-  UsersRound,
-  Repeat,
-  RotateCcw,
-  ClipboardCheck,
-  UserCheck 
+  LayoutDashboard,Grid,UserCheck,Users
 } from "lucide-react";
 
 export interface MenuItemProps {
@@ -49,16 +32,17 @@ export const menusConfig = {
         href: "/dashboard",
       },
  
-      {
-        title: "Category",
-        icon: Grid,
-        href: "/dashboard/category",
-        requiredRole: [RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN],
-      },
+  
       {
         title: "Attendance",
         icon: UserCheck ,
         href: "/dashboard/attendance",
+        requiredRole: [RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN],
+      },
+      {
+        title: "Employees",
+        icon: Users ,
+        href: "/dashboard/employees",
         requiredRole: [RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN],
       },
    

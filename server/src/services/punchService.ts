@@ -48,6 +48,14 @@ export class PunchService {
     }
 
     if (totalSaved > 0) logger.info(`Saved/Updated ${totalSaved} punches`);
+    try {
+      await this.getEmployeeHours({
+        start_time: options.start_time || `${today}T00:00:00Z`,
+        end_time: options.end_time || `${today}T23:59:59Z`,
+      })
+    } catch (error) {
+       logger.error("Error generating EmployeeDay after saving punches:", error);
+    }
     return totalSaved;
   };
 
@@ -154,6 +162,7 @@ async getEmployeeHours(options: FetchPunchesOptions = {}): Promise<EmployeeDay[]
           name: checkInPunch?.first_name || "Unknown",
           department: checkInPunch?.raw?.department || "Department",
           position: checkInPunch?.raw?.position || "Unknown",
+          isExcluded:false,
           date: dateKey,
           checkIn,
           checkOut,
@@ -194,5 +203,42 @@ async getEmployeeHours(options: FetchPunchesOptions = {}): Promise<EmployeeDay[]
     }
     return saved;
   };
+
+async searchEmployeeDash(userId: string, search: string, filter: string) {
+ 
+       interface QueryType {
+        name?: { $regex: string; $options: string };
+        $or?: Array<any>;
+    }
+
+
+    // INITIAL EMPTY QUERY
+    const query: QueryType = {};
+
+       // SEARCH BY EMPLOYEE NAME
+    if (search) {
+        query.name = { $regex: search, $options: "i" };
+    }
+
+    // filter logic
+      if (filter && filter !== "all") {
+        query.$or = [
+            { "checkIn.status": filter },
+            { "checkOut.status": filter }
+        ];
+    }
+
+       const total = await EmployeeDayModel.countDocuments(query);
+
+    const employees = await EmployeeDayModel
+        .find(query)
+        .sort({ createdAt: -1 });
+
+    return {
+        employees,
+        total,
+    };
+}
+
 }
 

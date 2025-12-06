@@ -219,10 +219,10 @@ export class AuthController {
 
             const rememberMe = true;
             
-              await handleAuthTokens(user, this.tokenService, res, rememberMe);
+            const tokens = await handleAuthTokens(user, this.tokenService, res, rememberMe);
 
             this.logger.info("User has been logged in", { id: user.id });
-            res.json({ id: user.id });
+            res.json({ id: user.id, accessToken: tokens.accessToken });
         } catch (err) {
             next(err);
             return;

@@ -1,9 +1,10 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
 import PunchModel  from "../models/PunchModel";
 import { Logger } from "winston";
 
 import { PunchService } from "../services/punchService";
+import { Request as AuthRequest } from "express-jwt";
 
 export class PunchController {
   constructor(private logger: Logger, private punchService: PunchService) {}
@@ -74,6 +75,23 @@ export class PunchController {
       res.status(500).json({ success: false, message: err || "Internal Server Error" });
     }
   };
+ searchEmployeeDash = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const userId = String(req.auth!.sub);
+        const search = (req.query.q as string) || "";
+        const filter = (req.query.filter as string) || "all";
+
+        const data = await this.punchService.searchEmployeeDash(
+            userId,
+            search,
+            filter
+        );
+
+        res.status(200).json(data);
+    } catch (error) {
+        return next(error);
+    }
+};
 
   webhookPunch = async (req: Request, res: Response) => {
     try {

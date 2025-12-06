@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title:
-      "AL-Nawayath - the place where fashion finds a home and comfort meets style",
+      "Tharb - the place where fashion finds a home and comfort meets style",
     description:
       "Discover our vibrant world of on-trend clothing, meticulously designed to enhance your wardrobe with the ideal balance of style and quality.",
     url: "https://alnawayath.com",
