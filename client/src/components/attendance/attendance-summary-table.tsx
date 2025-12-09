@@ -79,17 +79,16 @@ export default function AttendanceSummaryTable({
                 </TableCell>
               </TableRow>
             ) : (
-              data.map((employee) => (
-                <TableRow key={`${employee.employeeId}-${employee.date}`}>
+              data.map((employee, index) => (
+                <TableRow key={`${employee.employeeId}-${employee.date}-${index}`}>
                   <TableCell className="font-medium text-card-foreground/80">
                   <div className="flex gap-3 items-center">
                     <Avatar className="rounded-full">
-                      <AvatarFallback>  {employee.name
+                      <AvatarFallback>{employee.name
             .split(" ")
             .map((n) => n[0])
             .join("")
-            .toUpperCase()}
-            </AvatarFallback>
+            .toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <span className="text-sm text-card-foreground">
                       {employee.name}
@@ -124,14 +123,14 @@ export default function AttendanceSummaryTable({
                       className={`inline-flex px-2 py-1 mb-1 text-xs font-semibold rounded-full 
                 ${getStatusColor(employee?.checkIn?.status || "No Status")}`}
                     >
-                      {employee?.checkIn?.status ||""}
+                      {employee?.checkIn?.status || ""}
                     </div>
 
                     <div
                       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full 
                 ${getStatusColor(employee?.checkOut?.status || "No Status")}`}
                     >
-                      {employee?.checkOut?.status ||""}
+                      {employee?.checkOut?.status || ""}
                     </div>
                   </TableCell>
                 </TableRow>

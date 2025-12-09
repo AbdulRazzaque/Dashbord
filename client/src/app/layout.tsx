@@ -12,8 +12,8 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://alnawayath.com"),
   title: {
     default:
-      "AL-Nawayath - the place where fashion finds a home and comfort meets style",
-    template: "%s | AL-Nawayath",
+      "Tharb Attendance",
+    template: "%s | Tharb Attendance",
   },
   description:
     "Discover our vibrant world of on-trend clothing, meticulously designed to enhance your wardrobe with the ideal balance of style and quality.",
@@ -34,11 +34,11 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title:
-      "Tharb - the place where fashion finds a home and comfort meets style",
+      "Tharb",
     description:
       "Discover our vibrant world of on-trend clothing, meticulously designed to enhance your wardrobe with the ideal balance of style and quality.",
-    url: "https://alnawayath.com",
-    siteName: "AL-Nawayath",
+    url: "Tharb",
+    siteName: "Tharb",
     type: "website",
     locale: "en_IN",
     images: [
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
         url: "/opengraph-image.png",
         width: 1200,
         height: 630,
-        alt: "AL-Nawayath",
+        alt: "Tharb",
       },
     ],
   },
@@ -55,12 +55,12 @@ export const metadata: Metadata = {
     site: "@AL-Nawayath",
     creator: "@AL-Nawayath",
     title:
-      "AL-Nawayath - the place where fashion finds a home and comfort meets style",
+      "Tharb",
     description:
       "Discover our vibrant world of on-trend clothing, meticulously designed to enhance your wardrobe with the ideal balance of style and quality.",
     images: {
       url: "/twitter-image.png",
-      alt: "AL-Nawayath",
+      alt: "Tharb",
     },
   },
   verification: {

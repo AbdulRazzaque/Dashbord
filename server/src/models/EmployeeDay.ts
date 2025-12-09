@@ -3,11 +3,11 @@ import { EmployeeDay } from "../types";
 
 const EmployeeDaySchema = new Schema <EmployeeDay>({
   employeeId: Number,
-  name: String,
+  name: { type: String, required: true },
   isExcluded: { type: Boolean, default: false },
-  department: String,
-  position: String,
-  date: String,
+  department: { type: String, default: "Unknown" },
+  position: { type: String, default: "Unknown" },
+  date: { type: String, required: true },
   checkIn: {
     time: String,
     status: String,
@@ -17,8 +17,8 @@ const EmployeeDaySchema = new Schema <EmployeeDay>({
     status: String,
   },
   
-  totalHours: Number,
-   raw: Object,
-});
+  totalHours: { type: Number, default: 0 },
+   raw: { type: Object, default: {} },
+}, { strict: true });
 
 export const EmployeeDayModel = mongoose.model<EmployeeDay>("EmployeeDay", EmployeeDaySchema);

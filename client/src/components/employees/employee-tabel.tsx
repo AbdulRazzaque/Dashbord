@@ -1,5 +1,5 @@
 "use client";
-import { EmployeeInfo } from "@/types";
+import { SummaryRow } from "@/types";
 import React from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ import { AxiosError } from "axios";
 import { Icon } from "@iconify/react";
 import { isExclude } from "@/lib/http/api";
 interface Props {
-  data: EmployeeInfo[];
+  data: SummaryRow[];
   isLoading?: boolean;
   page?: number;
   setPage: (page: number) => void;
@@ -57,7 +57,7 @@ export default function EmployeeTable({
       }
     },
   });
-  console.log(data)
+
   return (
     <div className="w-full">
       <div className="overflow-x-auto">
@@ -93,27 +93,27 @@ export default function EmployeeTable({
                     <div className="flex gap-3 items-center">
                       <Avatar className="rounded-full">
                         <AvatarFallback>
-                          {" "}
-                          {employee.first_name
+                       
+                          {/* {employee.name
                             .split(" ")
                             .map((n) => n[0])
                             .join("")
-                            .toUpperCase()}
+                            .toUpperCase()} */}
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-sm text-card-foreground">
-                        {employee.first_name}
+                        {employee.name}
                       </span>
                     </div>
                   </TableCell>
 
                   <TableCell className="font-medium text-card-foreground/80">
-                    {employee.employeeId || employee.emp_code}
+                    {employee.employeeId }
                   </TableCell>
                    <TableCell>
                    <Button
                       onClick={() => {
-                        const id = employee.employeeId || Number(employee.emp_code);
+                        const id = employee.employeeId;
                         if (id) {
                           mutateApprove(id);
                         } else {
@@ -137,7 +137,7 @@ export default function EmployeeTable({
                       className="h-7 w-7"
                       color="secondary"
                       onClick={() => {
-                        const id = employee.employeeId || Number(employee.emp_code);
+                        const id = employee.employeeId;
                         router.push(`/dashboard/employees/view?id=${id}`);
                       }}
                     >

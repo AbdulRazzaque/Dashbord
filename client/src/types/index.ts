@@ -46,36 +46,21 @@ export interface BioTimePunch {
   [key: string]: any;
 }
 export interface Counts {
-  totalSales: number;
-  todaysOrders: number;
-  completedOrders: number;
-  pendingOrders: number;
+  totalEmployee: number;
+  TodyPresent: number;
+  TodyLateEmployee: number;
+  TodyAbsentEmployee: number;
 }
 
-export type EmployeeDay = {
-  employeeId: number;
-  name: string;
-  department: string;
-  position: string;
-  date: string;
-  checkIn: {
-    time: string;
-    status: string;
-  } | null;
-  checkOut: {
-    time: string;
-    status: string;
-  } | null;
-  totalHours: number;
-  raw: any;
-};
 
 
 
 export interface SummaryRow {
-  employeeId: string;
-  id: number;
+  employeeId: number;
   name: string;
+  id: number;
+  row: object 
+  isExcluded?: boolean;
   date:string;
   checkIn: {time:string; status:string} | null;
   checkOut: {time:string; status:string} | null;
@@ -84,14 +69,7 @@ export interface SummaryRow {
 };
 
 
-export interface EmployeeInfo {
-  id:number;
-  employeeId?:number;
-  emp_code?:string;
-  isExcluded:boolean;
-  first_name:string;
-  hire_date:string
-}
+
 
 export interface ProductData {
   id: string;

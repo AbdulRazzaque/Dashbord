@@ -38,7 +38,7 @@ const EcommerceStats = ({ data }: Props) => {
         </span>
         <div className="flex items-center gap-1">
           <span className="text-lg font-semibold text-default-900  dark:text-primary-foreground">
-            {data.totalSales ? data.totalSales : 0}
+            {data.totalEmployee ? data.totalEmployee : 0}
           </span>
           <Icon
             icon="heroicons:arrow-trending-up"

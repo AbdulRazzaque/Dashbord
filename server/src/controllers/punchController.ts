@@ -70,7 +70,19 @@ export class PunchController {
     fetchHours = async (req: Request, res: Response) => {
     try {
       const data = await this.punchService.getEmployeeHours();
-      res.json({ success: true, data });
+      
+      // Ensure all name fields are strings (defensive programming)
+      const sanitizedData = data.map(employee => ({
+        ...employee,
+        name: typeof employee.name === 'string' ? employee.name : 'Unknown',
+        employeeId: Number(employee.employeeId) || 0,
+        totalHours: Number(employee.totalHours) || 0,
+        date: String(employee.date || ''),
+        department: String(employee.department || 'Unknown'),
+        position: String(employee.position || 'Unknown')
+      }));
+      
+      res.json({ success: true, data: sanitizedData });
     } catch (err: any) {
       res.status(500).json({ success: false, message: err || "Internal Server Error" });
     }

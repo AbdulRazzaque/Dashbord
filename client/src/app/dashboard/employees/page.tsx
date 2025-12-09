@@ -7,7 +7,7 @@ import React, { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { getEmployees } from "@/lib/http/api";
-import { EmployeeInfo, } from "@/types";
+import {  SummaryRow, } from "@/types";
 import EmployeeTable from "@/components/employees/employee-tabel";
 
 const AttendancePage = () => {
@@ -17,10 +17,8 @@ const AttendancePage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all");
-  const router = useRouter();
 
-  const { data, isLoading } = useQuery<EmployeeInfo[]>({
+  const { data, isLoading } = useQuery<SummaryRow[]>({
     queryKey: [
       "getEmployees"],
     queryFn: async () => {
@@ -28,6 +26,7 @@ const AttendancePage = () => {
       const res = await getEmployees(
 
       );
+  
       return res.data.data;
     },
   });
@@ -36,19 +35,22 @@ const AttendancePage = () => {
 
 
   // ⭐ frontend filtering + searching
-  const filteredEmployees = useMemo(() => {
-    let result = [...employees];
+ const filteredEmployees = useMemo<SummaryRow[]>(() => {
+  const list = Array.isArray(employees) ? employees : [];
+  let result = [...list];
 
-    // search filter
-    if (search.trim()) {
-  const s = search.toLowerCase();
+  if (search.trim()) {
+    const s = search.toLowerCase();
+    result = result.filter(
+      (emp) =>
+        emp.name.toLowerCase().includes(s) ||
+        String(emp.employeeId).toLowerCase().includes(s)
+    );
+  }
 
-  result = result.filter((emp) =>
-    emp.first_name.toLowerCase().includes(s) ||    String(emp.employeeId).toLowerCase().includes(s)
-  );
-}
-   return result;
-  }, [employees, search]);
+  return result;
+}, [employees, search]);
+
  
 
   return (

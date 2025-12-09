@@ -5,6 +5,42 @@ import { BioTimePunch,EmployeeDay, FetchPunchesOptions, TimeStatus } from "../ty
 import logger from "../config/logger";
 import { EmployeeDayModel } from "../models/EmployeeDay";
 
+// Helper function to safely extract employee name as string
+function extractEmployeeName(punch: any): string {
+  if (!punch) return "Unknown";
+  
+  // Try direct first_name field
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  if (typeof punch.first_name === "string" && punch.first_name.trim()) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    return punch.first_name.trim() as string;
+  }
+  
+  // Try raw object
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  if (punch.raw) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (typeof punch.raw.full_name === "string" && punch.raw.full_name.trim()) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      return punch.raw.full_name.trim() as string;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (typeof punch.raw.format_name === "string" && punch.raw.format_name.trim()) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      return punch.raw.format_name.trim() as string;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (typeof punch.raw.first_name === "string" && punch.raw.first_name.trim()) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      const firstName = punch.raw.first_name.trim() as string;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      const lastName = typeof punch.raw.last_name === "string" ? (punch.raw.last_name.trim() as string) : "";
+      return lastName ? `${firstName} ${lastName}` : firstName;
+    }
+  }
+  
+  return "Unknown";
+}
 
 
 // helper format
@@ -47,7 +83,7 @@ export class PunchService {
       if (!res.next) break;
     }
 
-    if (totalSaved > 0) logger.info(`Saved/Updated ${totalSaved} punches`);
+    // if (totalSaved > 0) logger.info(`Saved/Updated ${totalSaved} punches`);
     try {
       await this.getEmployeeHours({
         start_time: options.start_time || `${today}T00:00:00Z`,
@@ -159,7 +195,7 @@ async getEmployeeHours(options: FetchPunchesOptions = {}): Promise<EmployeeDay[]
       }
         const dayRecord: EmployeeDay = {
           employeeId: Number(empId),
-          name: checkInPunch?.first_name || "Unknown",
+          name: extractEmployeeName(checkInPunch),
           department: checkInPunch?.raw?.department || "Department",
           position: checkInPunch?.raw?.position || "Unknown",
           isExcluded:false,
