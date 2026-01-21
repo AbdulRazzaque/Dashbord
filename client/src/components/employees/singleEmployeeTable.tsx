@@ -84,15 +84,15 @@ export default function getSingleEmployeeTable({
                   <TableCell className="font-medium text-card-foreground/80">
                   <div className="flex gap-3 items-center">
                     <Avatar className="rounded-full">
-                      <AvatarFallback>  {employee.name
+                      <AvatarFallback>  {(employee.first_name || "NA")
             .split(" ")
-            .map((n) => n[0])
+            .map((n: string) => n[0])
             .join("")
             .toUpperCase()}
             </AvatarFallback>
                     </Avatar>
                     <span className="text-sm text-card-foreground">
-                      {employee.name}
+                      {employee.first_name}
                     </span>
                   </div>
                 </TableCell>
@@ -100,7 +100,7 @@ export default function getSingleEmployeeTable({
                     {employee.date}
                   </TableCell>
 
-                  <TableCell>{employee.name}</TableCell>
+                  <TableCell>{employee.first_name}</TableCell>
 
                   <TableCell>{employee.employeeId}</TableCell>
 

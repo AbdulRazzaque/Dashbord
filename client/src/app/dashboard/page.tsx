@@ -62,7 +62,7 @@ const Page = () => {
 
       result = result.filter(
         (emp) =>
-          emp.name.toLowerCase().includes(s) ||
+          emp.first_name.toLowerCase().includes(s) ||
           String(emp.employeeId).toLowerCase().includes(s)
       );
     }

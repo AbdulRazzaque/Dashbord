@@ -58,13 +58,14 @@ export default function EmployeeTable({
     },
   });
 
+
   return (
     <div className="w-full">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
+              <TableHead>Sr No</TableHead>
               <TableHead>Employee</TableHead>
               <TableHead>Employee ID</TableHead>
             </TableRow>
@@ -84,25 +85,24 @@ export default function EmployeeTable({
                 </TableCell>
               </TableRow>
             ) : (
-              data.map((employee) => (
-                <TableRow key={`${employee.id}`}>
+              data.map((employee,index) => (
+                <TableRow key={`${index}`}>
                   <TableCell className="font-medium text-card-foreground/80">
-                    {employee.id}
+                    {index + 1}
                   </TableCell>
                   <TableCell className="font-medium text-card-foreground/80">
                     <div className="flex gap-3 items-center">
                       <Avatar className="rounded-full">
                         <AvatarFallback>
-                       
-                          {/* {employee.name
+                          {(employee.first_name || "NA")
                             .split(" ")
-                            .map((n) => n[0])
+                            .map((n: string) => n[0])
                             .join("")
-                            .toUpperCase()} */}
+                            .toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-sm text-card-foreground">
-                        {employee.name}
+                        {employee.first_name  || "NA"}
                       </span>
                     </div>
                   </TableCell>

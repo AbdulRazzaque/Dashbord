@@ -43,7 +43,7 @@ const AttendancePage = () => {
     const s = search.toLowerCase();
     result = result.filter(
       (emp) =>
-        emp.name.toLowerCase().includes(s) ||
+        (emp.first_name && emp.first_name.toLowerCase().includes(s)) ||
         String(emp.employeeId).toLowerCase().includes(s)
     );
   }

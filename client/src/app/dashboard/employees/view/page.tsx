@@ -39,13 +39,12 @@ const employees = data || [];
 
     // search filter
     if (search.trim()) {
-  const s = search.toLowerCase();
-
-  result = result.filter((emp) =>
-    emp.name.toLowerCase().includes(s) ||
-    String(emp.employeeId).toLowerCase().includes(s)
-  );
-}
+      const s = search.toLowerCase();
+      result = result.filter((emp) =>
+        (emp.first_name && emp.first_name.toLowerCase().includes(s)) ||
+        String(emp.employeeId).toLowerCase().includes(s)
+      );
+    }
 
 
     // status filter

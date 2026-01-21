@@ -74,7 +74,7 @@ export class PunchController {
       // Ensure all name fields are strings (defensive programming)
       const sanitizedData = data.map(employee => ({
         ...employee,
-        name: typeof employee.name === 'string' ? employee.name : 'Unknown',
+        first_name: typeof employee.first_name === 'string' ? employee.first_name : 'Unknown',
         employeeId: Number(employee.employeeId) || 0,
         totalHours: Number(employee.totalHours) || 0,
         date: String(employee.date || ''),

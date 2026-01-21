@@ -27,6 +27,7 @@ const formatHours = (minutes: number) => {
   return `${h}h ${rem}m`;
 };
 
+
 const getStatusColor = (status: string) => {
   switch (status) {
     case "Present":
@@ -43,19 +44,21 @@ const getStatusColor = (status: string) => {
 };
 
 export default function AttendanceSummaryTable({
-  data = [],
+  data ,
   isLoading,
   page = 1,
   setPage,
   rowsPerPage = 10,
   totalEmployee = 0,
 }: Props) {
+
   return (
     <div className="w-full">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Sr No</TableHead>
               <TableHead>Employee</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Employee ID</TableHead>
@@ -80,18 +83,22 @@ export default function AttendanceSummaryTable({
               </TableRow>
             ) : (
               data.map((employee, index) => (
-                <TableRow key={`${employee.employeeId}-${employee.date}-${index}`}>
+                <TableRow key={`${index}`}>
+                   <TableCell className="font-medium text-card-foreground/80">
+                                      {index + 1}
+                                    </TableCell>
                   <TableCell className="font-medium text-card-foreground/80">
                   <div className="flex gap-3 items-center">
                     <Avatar className="rounded-full">
-                      <AvatarFallback>{employee.name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .toUpperCase()}</AvatarFallback>
+                       <AvatarFallback>
+                         {(employee.first_name || "NA")
+                .split(" ")
+                .map((n: string) => n[0])
+                .join("")
+                .toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <span className="text-sm text-card-foreground">
-                      {employee.name}
+                      {employee.first_name  || "NA"}
                     </span>
                   </div>
                 </TableCell>
@@ -99,7 +106,7 @@ export default function AttendanceSummaryTable({
                     {employee.date}
                   </TableCell>
 
-                  <TableCell>{employee.name}</TableCell>
+                  <TableCell>{employee.first_name}</TableCell>
 
                   <TableCell>{employee.employeeId}</TableCell>
 

@@ -57,79 +57,13 @@ export interface Counts {
 
 export interface SummaryRow {
   employeeId: number;
-  name: string;
+  first_name: string;
   id: number;
-  row: object 
+  row: object;
   isExcluded?: boolean;
-  date:string;
-  checkIn: {time:string; status:string} | null;
-  checkOut: {time:string; status:string} | null;
+  date: string;
+  checkIn: { time: string; status: string } | null;
+  checkOut: { time: string; status: string } | null;
   totalHours: number;
   status: string;
 };
-
-
-
-
-export interface ProductData {
-  id: string;
-  name: string;
-  description?: string;
-  price: number;
-  image?: string;
-  category?: string;
-  variants?: Array<{
-    rate: number;
-    discount: number;
-    [key: string]: any;
-  }>;
-  [key: string]: any;
-}
-
-export interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  read: boolean;
-  createdAt: string;
-  type?: string;
-  [key: string]: any;
-}
-
-export interface ILanding {
-  _id: string;
-  title: string;
-  image?: string;
-  isActive?: boolean;
-  [key: string]: any;
-}
-
-export interface SubCategory {
-  _id: string;
-  name: string;
-  category?: string;
-  image?: string;
-  isActive?: boolean;
-  [key: string]: any;
-}
-
-export interface RetailerDetails {
-  _id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  status?: string;
-  isVerified?: boolean;
-  [key: string]: any;
-}
-
-export interface Order {
-  _id: string;
-  orderId?: string;
-  customer?: any;
-  items?: any[];
-  total?: number;
-  status?: string;
-  createdAt?: string;
-  [key: string]: any;
-}

@@ -3,7 +3,7 @@ import { EmployeeDay } from "../types";
 
 const EmployeeDaySchema = new Schema <EmployeeDay>({
   employeeId: Number,
-  name: { type: String, required: true },
+  first_name: { type: String, required: true },
   isExcluded: { type: Boolean, default: false },
   department: { type: String, default: "Unknown" },
   position: { type: String, default: "Unknown" },

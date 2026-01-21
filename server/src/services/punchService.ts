@@ -195,7 +195,7 @@ async getEmployeeHours(options: FetchPunchesOptions = {}): Promise<EmployeeDay[]
       }
         const dayRecord: EmployeeDay = {
           employeeId: Number(empId),
-          name: extractEmployeeName(checkInPunch),
+          first_name: extractEmployeeName(checkInPunch),
           department: checkInPunch?.raw?.department || "Department",
           position: checkInPunch?.raw?.position || "Unknown",
           isExcluded:false,
