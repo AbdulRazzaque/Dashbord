@@ -108,12 +108,12 @@ export default function EmployeeTable({
                   </TableCell>
 
                   <TableCell className="font-medium text-card-foreground/80">
-                    {employee.employeeId }
+                    {employee.emp_code }
                   </TableCell>
                    <TableCell>
                    <Button
                       onClick={() => {
-                        const id = employee.employeeId;
+                        const id = employee.emp_code;
                         if (id) {
                           mutateApprove(id);
                         } else {
@@ -137,7 +137,7 @@ export default function EmployeeTable({
                       className="h-7 w-7"
                       color="secondary"
                       onClick={() => {
-                        const id = employee.employeeId;
+                        const id = employee.emp_code;
                         router.push(`/dashboard/employees/view?id=${id}`);
                       }}
                     >

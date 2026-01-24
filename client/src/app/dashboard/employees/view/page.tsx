@@ -42,7 +42,7 @@ const employees = data || [];
       const s = search.toLowerCase();
       result = result.filter((emp) =>
         (emp.first_name && emp.first_name.toLowerCase().includes(s)) ||
-        String(emp.employeeId).toLowerCase().includes(s)
+        String(emp.emp_code).toLowerCase().includes(s)
       );
     }
 

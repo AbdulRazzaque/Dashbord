@@ -108,7 +108,7 @@ export default function AttendanceSummaryTable({
 
                   <TableCell>{employee.first_name}</TableCell>
 
-                  <TableCell>{employee.employeeId}</TableCell>
+                  <TableCell>{employee.emp_code}</TableCell>
 
                   <TableCell>
                     <div className="text-sm space-y-1">

@@ -98,7 +98,7 @@ export interface TimeStatus {
 }
 
 export interface EmployeeDay {
-      employeeId: number;
+      emp_code: number;
       first_name: string;
       department: string;
       position: string;

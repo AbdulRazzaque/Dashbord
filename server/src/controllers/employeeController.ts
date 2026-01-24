@@ -49,6 +49,9 @@ getSingleEmployee = async (
     next: NextFunction,
 ) => {
     const { id } = req.params;
+if (!id || id === 'undefined') {
+  return res.status(400).json({ ok: false, message: 'Employee ID is required' });
+}
 
     try {
         const data = await this.EmployeeService.getSingleEmployee(id);

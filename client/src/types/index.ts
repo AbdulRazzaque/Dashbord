@@ -56,7 +56,7 @@ export interface Counts {
 
 
 export interface SummaryRow {
-  employeeId: number;
+  emp_code: number;
   first_name: string;
   id: number;
   row: object;

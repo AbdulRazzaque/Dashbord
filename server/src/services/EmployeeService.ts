@@ -18,13 +18,13 @@ async getEmployees() {
   // Merge local DB exclude status
   const finalList = await Promise.all(
     allEmployees.map(async (emp) => {
-      const employeeId = emp.emp_code ? Number(emp.emp_code) : null;
+      const emp_code = emp.emp_code ? Number(emp.emp_code) : null;
 
-      const record = employeeId ? await EmployeeDayModel.findOne({ employeeId }) : null;
+      const record = emp_code ? await EmployeeDayModel.findOne({ emp_code }) : null;
 
       return {
         ...emp,
-        employeeId, // Add employeeId field for frontend
+        emp_code, // Add emp_code field for frontend
         isExcluded: record?.isExcluded ?? false, // better null-safe operator
       };
     })
@@ -38,21 +38,20 @@ async getEmployees() {
 
 async getSingleEmployee(employeeId: any) {
 
-    const query = { employeeId: Number(employeeId) };
+  const query = { emp_code: Number(employeeId) };
 
-    return await EmployeeDayModel.find(query);
+  return await EmployeeDayModel.find(query);
 }
     
 
 async isExclude(empCode: number) {
-
-  // Find by employeeId (not emp_code)
-  let employee = await EmployeeDayModel.findOne({ employeeId: empCode });
+  // Find by emp_code
+  let employee = await EmployeeDayModel.findOne({ emp_code: empCode });
 
   // If employee doesn't exist in DB, create a new record
   if (!employee) {
     employee = new EmployeeDayModel({
-      employeeId: empCode,
+      emp_code: empCode,
       isExcluded: true, // Set to true on first exclusion
     });
   } else {

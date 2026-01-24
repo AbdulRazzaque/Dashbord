@@ -9,8 +9,9 @@ import dotenv from "dotenv";
 import punchRoutes from "./routes/punchRoutes";
 import employeeRoutes from "./routes/employeeRoutes";
 import healthRoutes from "./routes/healthRoutes";
-
-
+import absentRoutes from "./routes/absentRoutes";
+// import "../cron/absent.cron";
+import '../src/cron/absent.cron';
 dotenv.config();
 const app = express();
 // app.use(helmet());
@@ -34,6 +35,7 @@ app.use("/api/auth", authRouter);
 app.use("/api", healthRoutes);
 app.use("/api", employeeRoutes);
 app.use("/api", punchRoutes);
+app.use("/api/",absentRoutes)
 app.get("/api/proxy", async (req, res) => {
   const path = req.query.path as string;
   if (!path?.startsWith("/")) return res.status(400).json({ ok: false, message: "Invalid path" });

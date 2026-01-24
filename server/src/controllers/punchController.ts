@@ -58,8 +58,8 @@ export class PunchController {
         raw: d.raw,
       }));
       /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-
       res.json({ ok: true, saved, page, limit, total, data });
+     
     } catch (err: any) {
       this.logger.error("Error fetching today's punches:", err);
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -75,7 +75,7 @@ export class PunchController {
       const sanitizedData = data.map(employee => ({
         ...employee,
         first_name: typeof employee.first_name === 'string' ? employee.first_name : 'Unknown',
-        employeeId: Number(employee.employeeId) || 0,
+         emp_code: Number(employee.emp_code) || 0,
         totalHours: Number(employee.totalHours) || 0,
         date: String(employee.date || ''),
         department: String(employee.department || 'Unknown'),
@@ -83,6 +83,7 @@ export class PunchController {
       }));
       
       res.json({ success: true, data: sanitizedData });
+  
     } catch (err: any) {
       res.status(500).json({ success: false, message: err || "Internal Server Error" });
     }

@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import { EmployeeDay } from "../types";
 
 const EmployeeDaySchema = new Schema <EmployeeDay>({
-  employeeId: Number,
+  emp_code: Number,
   first_name: { type: String, required: true },
   isExcluded: { type: Boolean, default: false },
   department: { type: String, default: "Unknown" },

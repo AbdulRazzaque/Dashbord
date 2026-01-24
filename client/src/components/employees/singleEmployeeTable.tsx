@@ -80,7 +80,7 @@ export default function getSingleEmployeeTable({
               </TableRow>
             ) : (
               data.map((employee) => (
-                <TableRow key={`${employee.employeeId}-${employee.date}`}>
+                <TableRow key={`${employee.emp_code}-${employee.date}`}>
                   <TableCell className="font-medium text-card-foreground/80">
                   <div className="flex gap-3 items-center">
                     <Avatar className="rounded-full">
@@ -102,7 +102,7 @@ export default function getSingleEmployeeTable({
 
                   <TableCell>{employee.first_name}</TableCell>
 
-                  <TableCell>{employee.employeeId}</TableCell>
+                  <TableCell>{employee.emp_code}</TableCell>
 
                   <TableCell>
                     <div className="text-sm space-y-1">

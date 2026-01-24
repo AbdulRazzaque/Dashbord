@@ -194,7 +194,7 @@ async getEmployeeHours(options: FetchPunchesOptions = {}): Promise<EmployeeDay[]
         totalHours = Math.floor(diffMs / 60000)
       }
         const dayRecord: EmployeeDay = {
-          employeeId: Number(empId),
+          emp_code: Number(empId),
           first_name: extractEmployeeName(checkInPunch),
           department: checkInPunch?.raw?.department || "Department",
           position: checkInPunch?.raw?.position || "Unknown",
@@ -208,7 +208,7 @@ async getEmployeeHours(options: FetchPunchesOptions = {}): Promise<EmployeeDay[]
 
   try {
     await EmployeeDayModel.updateOne(
-      { employeeId: empId, date: dateKey },
+      { emp_code: empId, date: dateKey },
       { $set: dayRecord },
       { upsert: true }
     );
