@@ -16,7 +16,7 @@ import type { UserData } from "@/types";
 import DeleteUser from "./delete-user";
 import { Badge } from "../ui/badge";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { changeUserStatus, verifyUser } from "@/lib/http/api";
+// import { changeUserStatus, verifyUser } from "@/lib/http/api";
 import { AxiosError } from "axios";
 import toast from "react-hot-toast";
 import { Skeleton } from "../ui/skeleton";
@@ -32,13 +32,13 @@ const UserTable = ({ data, isLoading = false }: UserTableProps) => {
   // Mutation for changing user status (active/inactive)
   const { mutate: changeStatus, isPending: isChangingStatus } = useMutation({
     mutationKey: ["changeUserStatus"],
-    mutationFn: async (id: string) => {
-      return await changeUserStatus(id); // API to change status
-    },
-    onSuccess: (data) => {
-      toast.success(data.data.message);
-      queryClient.invalidateQueries({ queryKey: ["getUsers"] }); // Refresh users data
-    },
+    // mutationFn: async (id: string) => {
+    //   return await changeUserStatus(id); // API to change status
+    // },
+    // onSuccess: (data) => {
+    //   toast.success(data.data.message);
+    //   queryClient.invalidateQueries({ queryKey: ["getUsers"] }); // Refresh users data
+    // },
     onError: (error) => {
       if (error instanceof AxiosError) {
         toast.error(
@@ -51,25 +51,25 @@ const UserTable = ({ data, isLoading = false }: UserTableProps) => {
   });
 
   // Mutation for verifying user
-  const { mutate: verifyUserMutation, isPending: isVerifying } = useMutation({
-    mutationKey: ["verifyUser"],
-    mutationFn: async (id: string) => {
-      return await verifyUser({ userId: id }); // API to verify user
-    },
-    onSuccess: (data) => {
-      toast.success(data.data.message);
-      queryClient.invalidateQueries({ queryKey: ["getUsers"] }); // Refresh users data
-    },
-    onError: (error) => {
-      if (error instanceof AxiosError) {
-        toast.error(
-          error.response?.data.errors?.[0]?.msg || "An error occurred"
-        );
-      } else {
-        toast.error("Something went wrong!");
-      }
-    },
-  });
+  // const { mutate: verifyUserMutation, isPending: isVerifying } = useMutation({
+  //   mutationKey: ["verifyUser"],
+  //   mutationFn: async (id: string) => {
+  //     return await verifyUser({ userId: id }); // API to verify user
+  //   },
+  //   onSuccess: (data) => {
+  //     toast.success(data.data.message);
+  //     queryClient.invalidateQueries({ queryKey: ["getUsers"] }); // Refresh users data
+  //   },
+  //   onError: (error) => {
+  //     if (error instanceof AxiosError) {
+  //       toast.error(
+  //         error.response?.data.errors?.[0]?.msg || "An error occurred"
+  //       );
+  //     } else {
+  //       toast.error("Something went wrong!");
+  //     }
+  //   },
+  // });
 
   if (isLoading) {
     return (
@@ -156,7 +156,7 @@ const UserTable = ({ data, isLoading = false }: UserTableProps) => {
               <Switch
                 checked={item.status === "active"}
                 disabled={isChangingStatus}
-                onCheckedChange={() => changeStatus(item._id)} // Calls changeUserStatus API
+                // onCheckedChange={() => changeStatus(item._id)} // Calls changeUserStatus API
                 aria-label={`Toggle status for ${item.firstName}`}
               />
             </TableCell>
@@ -166,7 +166,7 @@ const UserTable = ({ data, isLoading = false }: UserTableProps) => {
               </Badge>
             </TableCell>
             <TableCell>
-              <Button
+              {/* <Button
                 onClick={() => verifyUserMutation(item._id)} // Calls verifyUser API
                 variant="soft"
                 color={item.isVerified ? "success" : "destructive"}
@@ -174,7 +174,7 @@ const UserTable = ({ data, isLoading = false }: UserTableProps) => {
                 disabled={isVerifying}
               >
                 {item.isVerified ? "Verified" : "Unverified"}
-              </Button>
+              </Button> */}
             </TableCell>
             <TableCell className="flex">
               <div className="flex gap-3">

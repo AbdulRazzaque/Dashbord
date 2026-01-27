@@ -152,35 +152,33 @@ export const searchEmployee = (search: string, filter: string) =>
 
 export const getEmployees = async () => api.get(`/api/employees`);
 
+export const employeeCount = async () => api.get(`/api/employeeCount`);
+
 export const getSingleEmployee = (id: string) => api.get(`/api/singleEmployee/${id}`);
+
 
 export const isExclude = (id: number) =>
   api.get(`/api/isExclude/${id}`);
 
 
 /* 
-  Delete/CRUD operations
+  Absent API
 */
-export const deleteUser = (id: string) => api.delete(`/api/users/${id}`);
 
-export const deleteslider = (id: string) => api.delete(`/api/sliders/${id}`);
+export const getAbsentEmployee = async (
+  page?: number,
+  limit?: number,
+  startDate?: string,
+  endDate?: string
+) => {
+  const params: Record<string, string | number> = {};
+  
+  if (page !== undefined) params.page = page;
+  if (limit !== undefined) params.limit = limit;
+  if (startDate) params.startDate = startDate;
+  if (endDate) params.endDate = endDate;
+  
+  return api.get('/api/absentEmployee', { params });
+};
 
-export const deleteBrand = (id: string) => api.delete(`/api/brands/${id}`);
-
-export const changeLandingStatus = (id: string) =>
-  api.patch(`/api/sliders/${id}/status`);
-
-export const deleteSubCategory = (id: string) =>
-  api.delete(`/api/subcategories/${id}`);
-
-export const changeSubCategoryStatus = (id: string) =>
-  api.patch(`/api/subcategories/${id}/status`);
-
-export const verifyRetailerDetails = (data: { userId: string }) =>
-  api.patch(`/api/retailers/verify`, data);
-
-export const changeUserStatus = (id: string) =>
-  api.patch(`/api/users/${id}/status`);
-
-export const verifyUser = (data: { userId: string }) =>
-  api.patch(`/api/users/verify`, data);
+export const singleAbsentEmployee = (id: string) => api.get(`/api/singleAbsentEmployee/${id}`);

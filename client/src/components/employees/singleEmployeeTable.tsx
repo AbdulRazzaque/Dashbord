@@ -56,12 +56,13 @@ export default function getSingleEmployeeTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Employee</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Employee ID</TableHead>
-              <TableHead>Check In / Out</TableHead>
-              <TableHead>Total Hours</TableHead>
-              <TableHead>Status</TableHead>
+                 <TableHead>Sr No</TableHead>
+                         <TableHead>Employee</TableHead>
+                         <TableHead>Date</TableHead>
+                         <TableHead>Employee ID</TableHead>
+                         <TableHead>Check In / Out</TableHead>
+                         <TableHead>Total Hours</TableHead>
+                         <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -102,38 +103,25 @@ export default function getSingleEmployeeTable({
 
                   <TableCell>{employee.first_name}</TableCell>
 
-                  <TableCell>{employee.emp_code}</TableCell>
+                   <TableCell>{employee.emp_code}</TableCell>
+                 
+                                   <TableCell>
+                                     <div className="text-sm space-y-1">
+                                       <div className="flex items-center gap-2">
+                                         <span className="text-green-600">●</span>
+                                         In: {employee.checkIn?.time || "-"}
+                                       </div>
+                                       <div className="flex items-center gap-2">
+                                         <span className="text-red-600">●</span>
+                                         Out: {employee.checkOut?.time || "-"}
+                                       </div>
+                                     </div>
+                                   </TableCell>
+                 
+                                   <TableCell>{formatHours(employee.totalHours)}</TableCell>
+                                   <TableCell>{(employee.status)}</TableCell>
 
-                  <TableCell>
-                    <div className="text-sm space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-green-600">●</span>
-                        In: {employee.checkIn?.time || "-"}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-red-600">●</span>
-                        Out: {employee.checkOut?.time || "-"}
-                      </div>
-                    </div>
-                  </TableCell>
-
-                  <TableCell>{formatHours(employee.totalHours)}</TableCell>
-
-                  <TableCell className="flex flex-col  w-max">
-                    <div
-                      className={`inline-flex px-2 py-1 mb-1 text-xs font-semibold rounded-full 
-                ${getStatusColor(employee?.checkIn?.status || "No Status")}`}
-                    >
-                      {employee?.checkIn?.status ||""}
-                    </div>
-
-                    <div
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                ${getStatusColor(employee?.checkOut?.status || "No Status")}`}
-                    >
-                      {employee?.checkOut?.status ||""}
-                    </div>
-                  </TableCell>
+            
                 </TableRow>
               ))
             )}

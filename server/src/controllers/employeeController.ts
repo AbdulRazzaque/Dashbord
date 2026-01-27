@@ -49,10 +49,7 @@ getSingleEmployee = async (
     next: NextFunction,
 ) => {
     const { id } = req.params;
-if (!id || id === 'undefined') {
-  return res.status(400).json({ ok: false, message: 'Employee ID is required' });
-}
-
+  
     try {
         const data = await this.EmployeeService.getSingleEmployee(id);
         res.status(200).json(data); 
@@ -99,7 +96,6 @@ excludeToggle = async (req: Request, res: Response, next: NextFunction) => {
           const body = req.body as Partial<SearchParams>;
            const searchParams: SearchParams = {
             query: body.query ?? '',
-            categoryId: body.categoryId,
             role: body.role,
             page: Number(body.page ?? 1),
             limit: Math.min(Number(body.limit ?? 10), 100), // prevent huge limits
@@ -114,6 +110,23 @@ excludeToggle = async (req: Request, res: Response, next: NextFunction) => {
         }
     };
 
-
+    getEmployeeCount = async (req: Request, res: Response) => {
+      try {
+        const count = await this.EmployeeService.getEmployeeCount();
+  
+        res.status(200).json({
+          ok: true,
+          data: count, // ✅ NUMBER ONLY
+        });
+      } catch (error) {
+        this.logger.error("Failed to fetch employee count", { error });
+  
+        res.status(500).json({
+          ok: false,
+          message: "Failed to fetch employee count",
+        });
+      }
+    };
+  
 
   }

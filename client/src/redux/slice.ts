@@ -1,4 +1,4 @@
-import type { ProductData } from "@/types";
+
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 export interface CartItem {
@@ -62,69 +62,69 @@ export const cartSlice = createSlice({
   initialState,
   reducers: {
     // Add to cart action
-    addToCart: (
-      state,
-      action: PayloadAction<ProductData & { quantity?: number }>
-    ) => {
-      const product = action.payload;
-      const quantity = action.payload.quantity || 1;
-      const variant = product.variants?.[0];
+    // addToCart: (
+    //   state,
+    //   action: PayloadAction
+    // ) => {
+    //   const product = action.payload;
+    //   const quantity = action.payload.quantity || 1;
+    //   const variant = product.variants?.[0];
 
-      const attributes = variant?.attributes?.map((attr: any) => ({
-        id: attr.attributeId._id,
-        name: attr.attributeId.name,
-        value: attr.value,
-      })) || [];
+    //   const attributes = variant?.attributes?.map((attr: any) => ({
+    //     id: attr.attributeId._id,
+    //     name: attr.attributeId.name,
+    //     value: attr.value,
+    //   })) || [];
 
-      const size = attributes.find((attr: any) => attr.name === "Size")?.value || "";
-      const color =
-        attributes.find((attr: any) => attr.name === "Color")?.value || "";
+    //   const size = attributes.find((attr: any) => attr.name === "Size")?.value || "";
+    //   const color =
+    //     attributes.find((attr: any) => attr.name === "Color")?.value || "";
 
-      // Check if this is a set variant
-      const isSet = variant?.setDetails?.isSet || false;
-      const setSize = variant?.setDetails?.setSize;
-      const setLabel = variant?.setDetails?.setLabel;
-      const distribution = variant?.setDetails?.distribution;
+    //   // Check if this is a set variant
+    //   const isSet = variant?.setDetails?.isSet || false;
+    //   const setSize = variant?.setDetails?.setSize;
+    //   const setLabel = variant?.setDetails?.setLabel;
+    //   const distribution = variant?.setDetails?.distribution;
 
-      // Create unique ID based on whether it's a set or individual item
-      const itemId = isSet
-        ? `${product._id}-set-${setSize}`
-        : `${product._id}-${size}-${color}`;
+    //   // Create unique ID based on whether it's a set or individual item
+    //   const itemId = isSet
+    //     ? `${product._id}-set-${setSize}`
+    //     : `${product._id}-${size}-${color}`;
 
-      const price = variant?.rate || 0;
-      const total = price * quantity;
+    //   const price = variant?.rate || 0;
+    //   const total = price * quantity;
 
-      const existingItem = state.items.find((item) => item.id === itemId);
+    //   const existingItem = state.items.find((item) => item.id === itemId);
 
-      if (existingItem) {
-        existingItem.quantity += quantity;
-        existingItem.total = existingItem.price * existingItem.quantity;
-      } else {
-        state.items.push({
-          id: itemId,
-          productId: product._id,
-          name: product.name,
-          price,
-          originalPrice: variant?.mrp || 0,
-          quantity,
-          total,
-          image: product.featureImg,
-          size,
-          color,
-          sku: variant?.sku || "",
-          discount: variant?.discount || 0,
-          availableStock: variant?.quantity || 0,
-          attributes,
-          // Add set-specific data
-          isSet,
-          setSize,
-          setLabel,
-          distribution,
-        });
-      }
+    //   if (existingItem) {
+    //     existingItem.quantity += quantity;
+    //     existingItem.total = existingItem.price * existingItem.quantity;
+    //   } else {
+    //     state.items.push({
+    //       id: itemId,
+    //       productId: product._id,
+    //       name: product.name,
+    //       price,
+    //       originalPrice: variant?.mrp || 0,
+    //       quantity,
+    //       total,
+    //       image: product.featureImg,
+    //       size,
+    //       color,
+    //       sku: variant?.sku || "",
+    //       discount: variant?.discount || 0,
+    //       availableStock: variant?.quantity || 0,
+    //       attributes,
+    //       // Add set-specific data
+    //       isSet,
+    //       setSize,
+    //       setLabel,
+    //       distribution,
+    //     });
+    //   }
 
-      state.total = calculateTotal(state.items);
-    },
+    //   state.total = calculateTotal(state.items);
+    // },
 
     // Remove from cart action
     removeFromCart: (state, action: PayloadAction<string>) => {
@@ -151,27 +151,27 @@ export const cartSlice = createSlice({
       state.total = 0;
     },
     // Add to wishlist action
-    addToWishlist: (state, action: PayloadAction<ProductData>) => {
-      const product = action.payload;
-      const variant = product.variants?.[0];
+    // addToWishlist: (state, action: PayloadAction) => {
+    //   const product = action.payload;
+    //   const variant = product.variants?.[0];
 
-      // Check if the product is already in the wishlist
-      const exists = state.wishlist.some(
-        (item) => item.productId === product._id
-      );
+    //   // Check if the product is already in the wishlist
+    //   const exists = state.wishlist.some(
+    //     (item) => item.productId === product._id
+    //   );
 
-      if (!exists) {
-        state.wishlist.push({
-          id: `wishlist-${product._id}`,
-          productId: product._id,
-          name: product.name,
-          price: variant?.rate || 0,
-          originalPrice: variant?.mrp || 0,
-          image: product.featureImg,
-          discount: variant?.discount || 0,
-        });
-      }
-    },
+    //   if (!exists) {
+    //     state.wishlist.push({
+    //       id: `wishlist-${product._id}`,
+    //       productId: product._id,
+    //       name: product.name,
+    //       price: variant?.rate || 0,
+    //       originalPrice: variant?.mrp || 0,
+    //       image: product.featureImg,
+    //       discount: variant?.discount || 0,
+    //     });
+    //   }
+    // },
     // Remove from wishlist action
     removeFromWishlist: (state, action: PayloadAction<string>) => {
       state.wishlist = state.wishlist.filter(
@@ -212,11 +212,9 @@ export const cartSlice = createSlice({
 
 // Export actions
 export const {
-  addToCart,
   removeFromCart,
   updateQuantity,
   clearCart,
-  addToWishlist,
   removeFromWishlist,
   toggleWishlist,
 } = cartSlice.actions;

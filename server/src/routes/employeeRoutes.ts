@@ -20,6 +20,11 @@ router.get(
     asyncWrapper(employeeController.getEmployees),
 );
 router.get(
+    "/employeeCount",
+    authenticate,
+    asyncWrapper(employeeController.getEmployeeCount),
+);
+router.get(
     "/singleEmployee/:id",
     authenticate,
     asyncWrapper(employeeController.getSingleEmployee),

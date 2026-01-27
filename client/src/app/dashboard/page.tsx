@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 // import { Counts } from "@/types";
 import AttendanceSummaryTable from "@/components/attendance/attendance-summary-table";
-import { getEmployees, getTodayAttendanceSummary } from "@/lib/http/api";
+import { employeeCount, getEmployees, getTodayAttendanceSummary } from "@/lib/http/api";
 import {  SummaryRow } from "@/types";
 import { Input } from "@/components/ui/input";
 
@@ -84,16 +84,16 @@ const Page = () => {
   /* 
     Get Total Employee count  
   */
-        // const {
-        //   data: employeeData,
-        //   isLoading: employeeLoading,
-        // } = useQuery<number>({
-        //   queryKey: ["getEmployees"],
-        //   queryFn: async () => {
-        //     const res = await getEmployees();
-        //     return res.data.count; // returning a number
-        //   },
-        // });
+        const {
+          data: employeeData,
+          isLoading: employeeLoading,
+        } = useQuery<number>({
+          queryKey: ["employeeCount"],
+          queryFn: async () => {
+            const res = await employeeCount();
+            return res.data.data; // returning a number
+          },
+        });
         
   return (
     <div className="space-y-6">
@@ -110,14 +110,14 @@ const Page = () => {
       <Card>
         <CardContent className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            {/* <EcommerceStats
+            <EcommerceStats
               data={{
                 totalEmployee: employeeData ?? 0,
                 TodyPresent: 0,
                 TodyLateEmployee: 0,
                 TodyAbsentEmployee: 0,
               }}
-            /> */}
+            />
           </div>
         </CardContent>
       </Card>

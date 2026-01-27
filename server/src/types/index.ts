@@ -75,13 +75,14 @@ export interface BioTimeResponse<T = any> {
   count?: number;
 }
 
-export interface SearchParams {
-    query?: string;
-    categoryId?: string;
-    role?: string;
-    page?: number;
-    limit?: number;
-}
+  export interface SearchParams {
+      query?: string;
+      role?: string;
+      page?: number;
+      limit?: number;
+      startDate?: Date;
+      endDate?: Date;
+  }
 
 
 
@@ -107,13 +108,25 @@ export interface EmployeeDay {
       checkOut: TimeStatus | null;
       totalHours: number;
       raw:object;
-      isExcluded:boolean;
+    
     }
 
 export interface IEmployee {
-  id: number;
-  emp_code: string;
+
+  emp_code: number;
   first_name: string;
-  hire_date: string | null;
+  isExcluded: boolean;   // 🔴 REQUIRED
+  isDeleted: boolean;
+  raw: Record<string, any>;
 }
 
+export interface AbsentType {
+  _id: string;
+  emp_code: number;
+  first_name: string;
+  date: Date;
+  status: "ABSENT";
+  reason: string;
+}
+
+export interface AbsentSearchOptions extends SearchParams {}

@@ -4,17 +4,19 @@ import { CupBar, NoteIcon, CheckShape, Spam } from "@/components/svg";
 import { cn } from "@/lib/utils";
 import { Counts } from "@/types";
 import { Icon } from "@iconify/react";
+import { useRouter } from "next/navigation";
 
 interface Props {
   data: Counts;
 }
-
 const EcommerceStats = ({ data }: Props) => {
+  const router = useRouter();
   return (
     <>
       <div
+        onClick={() => router.push("/dashboard/employees")}
         className={cn(
-          "flex flex-col gap-1.5 p-4 rounded-sm overflow-hidden   items-start relative before:absolute before:left-1/2 before:-translate-x-1/2 before:bottom-1 before:h-[2px] before:w-9 before:bg-primary/50 dark:before:bg-primary-foreground before:hidden bg-primary/40  dark:bg-primary/70"
+          "cursor-pointer flex flex-col gap-1.5 p-4 rounded-sm overflow-hidden   items-start relative before:absolute before:left-1/2 before:-translate-x-1/2 before:bottom-1 before:h-[2px] before:w-9 before:bg-primary/50 dark:before:bg-primary-foreground before:hidden bg-primary/40  dark:bg-primary/70"
         )}
       >
         <span
@@ -22,7 +24,7 @@ const EcommerceStats = ({ data }: Props) => {
             "h-[95px] w-[95px] rounded-full absolute -top-8 -right-8 ring-[20px]  bg-primary/50  ring-primary/20 dark:bg-primary dark:ring-primary/40"
           )}
         ></span>
-        <div
+        <div 
           className={`w-8 h-8 grid place-content-center rounded-full border border-dashed border-primary dark:border-primary-foreground/60`}
         >
           <span
@@ -72,7 +74,7 @@ const EcommerceStats = ({ data }: Props) => {
         </span>
         <div className="flex items-center gap-1">
           <span className="text-lg font-semibold text-default-900  dark:text-primary-foreground">
-            {data.todaysOrders ? data.todaysOrders : 0}
+            {/* {data.todaysOrders ? data.todaysOrders : 0} */}
           </span>
           <Icon
             icon="heroicons:arrow-trending-up"
@@ -106,7 +108,8 @@ const EcommerceStats = ({ data }: Props) => {
         </span>
         <div className="flex items-center gap-1">
           <span className="text-lg font-semibold text-default-900  dark:text-primary-foreground">
-            {data.completedOrders ? data.completedOrders : 0}
+            {/* {data.completedOrders ? data.completedOrders : 0} */}
+            {0}
           </span>
           <Icon
             icon="heroicons:arrow-trending-up"
@@ -140,7 +143,8 @@ const EcommerceStats = ({ data }: Props) => {
         </span>
         <div className="flex items-center gap-1">
           <span className="text-lg font-semibold text-default-900  dark:text-primary-foreground">
-            {data.pendingOrders ? data.pendingOrders : 0}
+            {/* {data.pendingOrders ? data.pendingOrders : 0} */}
+            {0}
           </span>
           <Icon
             icon="heroicons:arrow-trending-up"

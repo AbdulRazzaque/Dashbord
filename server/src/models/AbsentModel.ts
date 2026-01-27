@@ -1,14 +1,9 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema } from "mongoose";
+import { AbsentType } from "../types";
 
-export interface AbsentDocument extends Document {
-  emp_code: number;
-  first_name: string;
-  date: string; // YYYY-MM-DD
-  reason: string;
-    isExcluded: boolean;
-}
 
-const AbsentSchema = new Schema<AbsentDocument>(
+
+const AbsentSchema = new Schema(
   {
     emp_code: {
       type: Number,
@@ -19,19 +14,23 @@ const AbsentSchema = new Schema<AbsentDocument>(
       required: true,
     },
     date: {
-      type: String,
+      type: Date,
       required: true,
     },
     reason: {
       type: String,
       default: "No CheckIn",
     },
-    isExcluded: {
-      type: Boolean,
-     required:true
+    status: {
+      type: String,
+      enum: ["Absent"],
+      default: "Absent",
+      required: true,
     },
+
   },
-  { timestamps: true }
+  { timestamps: true },
+
 );
 
 // ✅ UNIQUE INDEX (VERY IMPORTANT)
@@ -40,7 +39,7 @@ AbsentSchema.index(
   { unique: true }
 );
 
-const AbsentModel = mongoose.model<AbsentDocument>(
+const AbsentModel = mongoose.model<AbsentType>(
   "Absent",
   AbsentSchema
 );

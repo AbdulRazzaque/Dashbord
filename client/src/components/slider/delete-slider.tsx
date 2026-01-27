@@ -11,7 +11,7 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteBrand, deleteslider } from "@/lib/http/api";
+
 import { AxiosError } from "axios";
 import { Button } from "../ui/button";
 import { Icon } from "@iconify/react";
@@ -25,26 +25,7 @@ interface Props {
 const DeleteSlider = ({ id }: Props) => {
   const [open, setOpen] = useState(false);
 
-  const queryClient = useQueryClient();
 
-  const { mutate, isPending } = useMutation({
-    mutationKey: ["deleteslider"],
-    mutationFn: async () => {
-      return await deleteslider(id);
-    },
-    onSuccess: () => {
-      setOpen(false);
-      toast.success(`Slider has been successfully deleted.`);
-      return queryClient.invalidateQueries({ queryKey: ["getSliders"] });
-    },
-    onError(error, variables, context) {
-      if (error instanceof AxiosError) {
-        toast.error(error.response?.data.errors[0].msg);
-      } else {
-        toast.error("Something went wrong!");
-      }
-    },
-  });
 
   return (
     <>
@@ -77,10 +58,7 @@ const DeleteSlider = ({ id }: Props) => {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                mutate();
-              }}
-              disabled={isPending}
+             
               className="bg-destructive hover:bg-destructive/80"
             >
               Ok

@@ -128,7 +128,7 @@ const NotificationMessage = () => {
                   <div className="flex-1 flex items-center gap-2">
                     <div>
                       <div className="text-sm font-medium text-default-900 mb-[2px] whitespace-nowrap">
-                        {item.orderId.refId}
+                        {/* {item.orderId.refId} */}
                       </div>
                       <div className="text-xs text-default-900 truncate max-w-[100px] lg:max-w-[185px]">
                         {" "}
@@ -169,7 +169,7 @@ const NotificationMessage = () => {
             <div className="py-4">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold mb-1">
-                  Order: {selectedNotification.orderId.refId}
+                  Order: 1234
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {new Date(selectedNotification.createdAt).toLocaleString()}

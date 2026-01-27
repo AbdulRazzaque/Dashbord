@@ -119,13 +119,18 @@ export function isObjectNotEmpty(obj: any): boolean {
 }
 
 export const formatDate = (date: string | number | Date): string => {
-  const options: Intl.DateTimeFormatOptions = {
+  if (!date) return "N/A";
+
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "N/A";
+
+  return d.toLocaleDateString("en-GB", {
+    weekday: "long",   // Monday
+    day: "2-digit",
+    month: "short",
     year: "numeric",
-    month: "long",
-    day: "numeric",
-  };
-  return new Date(date).toLocaleDateString("en-US", options);
-};
+  });
+}
 
 // random word
 export function getWords(inputString: string): string {

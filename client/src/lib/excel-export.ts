@@ -1,7 +1,6 @@
 import * as XLSX from "xlsx";
-import type { Order } from "@/types";
 
-export const exportOrdersToExcel = (orders: Order[], filename = "orders") => {
+export const exportOrdersToExcel = (orders:any[], filename = "orders") => {
   // Prepare data for Excel export
   const excelData = orders.map((order) => ({
     "Order ID": order.refId,

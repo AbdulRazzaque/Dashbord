@@ -35,7 +35,7 @@ app.use("/api/auth", authRouter);
 app.use("/api", healthRoutes);
 app.use("/api", employeeRoutes);
 app.use("/api", punchRoutes);
-app.use("/api/",absentRoutes)
+app.use("/api", absentRoutes);
 app.get("/api/proxy", async (req, res) => {
   const path = req.query.path as string;
   if (!path?.startsWith("/")) return res.status(400).json({ ok: false, message: "Invalid path" });

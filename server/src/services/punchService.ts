@@ -4,6 +4,7 @@ import PunchModel, { IPunch } from "../models/PunchModel";
 import { BioTimePunch,EmployeeDay, FetchPunchesOptions, TimeStatus } from "../types";
 import logger from "../config/logger";
 import { EmployeeDayModel } from "../models/EmployeeDay";
+import AbsentModel from "../models/AbsentModel";
 
 // Helper function to safely extract employee name as string
 function extractEmployeeName(punch: any): string {
@@ -166,7 +167,27 @@ async getEmployeeHours(options: FetchPunchesOptions = {}): Promise<EmployeeDay[]
           }
         }
       }
+       // ================= ABSENT REMOVE LOGIC (HERE) =================
+       if (checkInPunch?.punch_time) {
+        try {
+          const startOfDay = new Date(`${dateKey}T00:00:00.000Z`);
+          const endOfDay = new Date(`${dateKey}T23:59:59.999Z`);
 
+          await AbsentModel.deleteOne({
+            
+            emp_code: Number(empId),
+            date: {
+              $gte: startOfDay,
+              $lte: endOfDay,
+            },
+          });
+        } catch (err) {
+          logger.error(
+            `Failed to remove absent for emp ${empId} on ${dateKey}`,
+            err
+          );
+        }
+      }
       // Check-in
       let checkIn: TimeStatus | null = null;
       if (checkInPunch?.punch_time) {
@@ -198,7 +219,6 @@ async getEmployeeHours(options: FetchPunchesOptions = {}): Promise<EmployeeDay[]
           first_name: extractEmployeeName(checkInPunch),
           department: checkInPunch?.raw?.department || "Department",
           position: checkInPunch?.raw?.position || "Unknown",
-          isExcluded:false,
           date: dateKey,
           checkIn,
           checkOut,

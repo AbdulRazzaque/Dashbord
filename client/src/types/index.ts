@@ -53,6 +53,18 @@ export interface Counts {
 }
 
 
+export interface Notification {
+  _id: string;
+  recipientId: UserData;
+  recipientRole: string;
+
+  type: string;
+  message: string;
+  isRead: boolean;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 
 export interface SummaryRow {
@@ -67,3 +79,13 @@ export interface SummaryRow {
   totalHours: number;
   status: string;
 };
+
+export interface AbsentEmployee {
+  _id: string;
+  emp_code: number;
+  status:string,
+  first_name: string;
+  date:string;
+  reason:string;
+}
+

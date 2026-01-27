@@ -6,44 +6,78 @@ import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import AttendanceSummaryTable from "@/components/attendance/attendance-summary-table";
+
 import { useQuery } from "@tanstack/react-query";
-import { getTodayAttendanceSummary } from "@/lib/http/api";
-import {  SummaryRow, } from "@/types";
+import { getAbsentEmployee } from "@/lib/http/api";
+import { AbsentEmployee } from "@/types";
+import AbsentTable from "@/components/absent/absent-tabel";
+import DatePickerWithRange from "@/components/date-picker-with-range";
 
 const AbsentPage = () => {
   const breadcrumbItems = [
-    { title: "Attendance", link: "/dashboard/attendance" },
+    { title: "Absent", link: "/dashboard/absent" },
   ];
 
 
+  // Get today's date in Qatar time
+  const getTodayDate = () => {
+    const now = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Qatar" })
+    );
+    now.setHours(0, 0, 0, 0);
+    return now;
+  };
+
+  // Get yesterday's date in Qatar time
+  const getYesterdayDate = () => {
+    const yesterday = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Qatar" })
+    );
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(0, 0, 0, 0);
+    return yesterday;
+  };
+
+  // Convert Date to YYYY-M-D string (no leading zeros)
+  const formatDateToString = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1; // getMonth() is zero-based
+    const day = date.getDate();
+    return `${year}-${month}-${day}`;
+  };
+
+
   const [page, setPage] = useState(1);
+  const [limit] = useState(50);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  // By default, show from yesterday to today
+  const [startDate, setStartDate] = useState<Date>(getYesterdayDate());
+  const [endDate, setEndDate] = useState<Date>(getTodayDate());
   const router = useRouter();
 
-  const { data, isLoading } = useQuery<SummaryRow[]>({
-    queryKey: [
-      "getTodayAttendanceSummary"],
+  const { data, isLoading, error } = useQuery<{
+    data: AbsentEmployee[];
+    pagination: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
+  }>({
+    queryKey: ["getAbsentEmployee", page, limit, formatDateToString(startDate), formatDateToString(endDate)],
     queryFn: async () => {
-    
-      const res = await getTodayAttendanceSummary(
-
-      );
-      return res.data.data;
+      const startDateStr = formatDateToString(startDate);
+      const endDateStr = formatDateToString(endDate);
+      const res = await getAbsentEmployee(page, limit, startDateStr, endDateStr);
+      return res.data;
+      
     },
   });
 
 
-
- const employees = data || [];
+  const employees = data?.data || [];
+  const pagination = data?.pagination;
 
   // ⭐ frontend filtering + searching
   const filteredEmployees = useMemo(() => {
@@ -59,18 +93,6 @@ const AbsentPage = () => {
   );
 }
 
-
-    // status filter
-   if (filter !== "all") {
-  result = result.filter(emp => {
-    const inStatus = emp?.checkIn?.status;
-    const outStatus = emp?.checkOut?.status;
-
-    return inStatus === filter || outStatus === filter;
-  });
-}
-
-
     return result;
   }, [employees, search, filter]);
 
@@ -82,33 +104,43 @@ const AbsentPage = () => {
       <Card>
         <div className="p-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-1">
+          
+              <DatePickerWithRange
+                startDate={startDate}
+                setStartDate={(date) => {
+                  setStartDate(date);
+                  setPage(1); // Reset to first page when date changes
+                }}
+                endDate={endDate}
+                setEndDate={(date) => {
+                  setEndDate(date);
+                  setPage(1); // Reset to first page when date changes
+                }}
+                maxDate={getTodayDate()}
+              />
+            </div>
             <Input
               placeholder="Search Employee Name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-64"
             />
-            <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="State filter" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Present">Present</SelectItem>
-                <SelectItem value="Late">Late</SelectItem>
-                <SelectItem value="Checkout">Checkout</SelectItem>
-                <SelectItem value="Early Out">Early Out</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
          
         </div>
-        <AttendanceSummaryTable
+        {error && (
+          <div className="p-4 text-red-500">
+            Error loading absent employees. Please try again.
+          </div>
+        )}
+        <AbsentTable
           data={filteredEmployees || []}
-          isLoading={isLoading }
+          isLoading={isLoading}
           page={page}
           setPage={setPage}
-          totalEmployee={0}
+          totalEmployee={pagination?.total || 0}
+          rowsPerPage={limit}
         />
       </Card>
     </>

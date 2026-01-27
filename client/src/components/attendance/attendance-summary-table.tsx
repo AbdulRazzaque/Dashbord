@@ -105,9 +105,6 @@ export default function AttendanceSummaryTable({
                   <TableCell className="font-medium text-card-foreground/80">
                     {employee.date}
                   </TableCell>
-
-                  <TableCell>{employee.first_name}</TableCell>
-
                   <TableCell>{employee.emp_code}</TableCell>
 
                   <TableCell>

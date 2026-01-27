@@ -13,7 +13,7 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteUser } from "@/lib/http/api";
+// import { deleteUser } from "@/lib/http/api";
 import { AxiosError } from "axios";
 import { Button } from "../ui/button";
 import { Icon } from "@iconify/react";
@@ -29,24 +29,24 @@ const DeleteUser = ({ id, name }: Props) => {
 
   const queryClient = useQueryClient();
 
-  const { mutate, isPending } = useMutation({
-    mutationKey: ["deleteUser"],
-    mutationFn: async () => {
-      return await deleteUser(id);
-    },
-    onSuccess: () => {
-      setOpen(false);
-      toast.success(`User: ${name} has been successfully deleted.`);
-      return queryClient.invalidateQueries({ queryKey: ["getUsers"] });
-    },
-    onError(error, variables, context) {
-      if (error instanceof AxiosError) {
-        toast.error(error.response?.data.errors[0].msg);
-      } else {
-        toast.error("Something went wrong!");
-      }
-    },
-  });
+  // const { mutate, isPending } = useMutation({
+  //   mutationKey: ["deleteUser"],
+  //   mutationFn: async () => {
+  //     return await deleteUser(id);
+  //   },
+  //   onSuccess: () => {
+  //     setOpen(false);
+  //     toast.success(`User: ${name} has been successfully deleted.`);
+  //     return queryClient.invalidateQueries({ queryKey: ["getUsers"] });
+  //   },
+  //   onError(error, variables, context) {
+  //     if (error instanceof AxiosError) {
+  //       toast.error(error.response?.data.errors[0].msg);
+  //     } else {
+  //       toast.error("Something went wrong!");
+  //     }
+  //   },
+  // });
 
   return (
     <>
@@ -78,7 +78,7 @@ const DeleteUser = ({ id, name }: Props) => {
             >
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction
+            {/* <AlertDialogAction
               onClick={() => {
                 mutate();
               }}
@@ -86,7 +86,7 @@ const DeleteUser = ({ id, name }: Props) => {
               className="bg-destructive hover:bg-destructive/80"
             >
               Ok
-            </AlertDialogAction>
+            </AlertDialogAction> */}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
