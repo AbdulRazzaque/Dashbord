@@ -58,7 +58,7 @@ export interface VerificationToken {
 
 
 export interface BioTimePunch {
-  id: number;
+   punch_id: number;
   emp_code: number;
   first_name:string;
   punch_time: string;

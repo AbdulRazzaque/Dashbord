@@ -44,13 +44,16 @@ export class AbsentService {
 
     const empCodes = validEmployees.map(e => e.emp_code);
 
-    // 3️⃣ PRESENT employees (REAL check-in only)
+    // 3️⃣ PRESENT employees (check-in OR check-out)
     const presentRecords = await EmployeeDayModel.find(
       {
         emp_code: { $in: empCodes },
         date: todayString,
-        "checkIn.time": { $type: "string", $ne: "" }, // ✅ FIX
         isExcluded: { $ne: true },
+        $or: [
+          { "checkIn.time": { $type: "string", $ne: "" } },
+          { "checkOut.time": { $type: "string", $ne: "" } }
+        ]
       },
       { emp_code: 1 }
     ).lean();
@@ -67,7 +70,7 @@ export class AbsentService {
         first_name: e.first_name,
         date: todayDate,
         status: "Absent",
-        reason: "No CheckIn",
+        reason: "No CheckIn or CheckOut",
       }));
 
   
