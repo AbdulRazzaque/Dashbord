@@ -8,7 +8,8 @@ const absentService = new AbsentService();
 
 cron.schedule(
   // "59 23 * * *",
-'* * * * *',
+// '* * * * *',
+ "0 10 * * *",
   async (): Promise<void> => {
     try { 
       logger.info("Absent cron started");

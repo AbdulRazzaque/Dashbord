@@ -265,17 +265,170 @@ const CHECKOUT_VALID_HOUR = 10; // 10:00 AM
 //   return result;
 // }
 
-async getEmployeeHours(options: FetchPunchesOptions = {}): Promise<EmployeeDay[]> {
+// async getEmployeeHours(options: FetchPunchesOptions = {}): Promise<EmployeeDay[]> {
+
+//   // ===== CONFIG =====
+//   const CHECKIN_CUTOFF_HOUR = 8;
+//   const CHECKIN_CUTOFF_MIN = 30;
+
+//   const CHECKOUT_CUTOFF_HOUR = 15;
+//   const CHECKOUT_CUTOFF_MIN = 30;
+
+//   // ===== DATE RANGE =====
+//   const today = new Date().toISOString().slice(0, 10);
+//   const start = options.start_time
+//     ? new Date(options.start_time)
+//     : new Date(`${today}T00:00:00.000Z`);
+
+//   const end = options.end_time
+//     ? new Date(options.end_time)
+//     : new Date(`${today}T23:59:59.999Z`);
+
+//   // ===== FETCH PUNCHES =====
+//   const docs = await PunchModel.find({
+//     punch_time: { $gte: start, $lte: end },
+//   })
+//     .sort({ punch_time: 1 })
+//     .lean<IPunch[]>();
+
+//   // ===== GROUP BY EMP + DATE =====
+//   const employeesMap: Record<string, Record<string, IPunch[]>> = {};
+
+//   for (const d of docs) {
+//     if (!d.punch_time || !d.emp_code) continue;
+
+//     const empId = String(d.emp_code);
+//     const dateKey = new Date(d.punch_time).toISOString().split("T")[0];
+
+//     if (!employeesMap[empId]) employeesMap[empId] = {};
+//     if (!employeesMap[empId][dateKey]) employeesMap[empId][dateKey] = [];
+
+//     employeesMap[empId][dateKey].push(d);
+//   }
+
+//   const result: EmployeeDay[] = [];
+
+//   // ===== PROCESS =====
+//   for (const empId in employeesMap) {
+//     for (const dateKey in employeesMap[empId]) {
+
+//       // ---------- SORT ----------
+//       const sortedPunches = employeesMap[empId][dateKey].sort(
+//         (a, b) =>
+//           new Date(a.punch_time!).getTime() -
+//           new Date(b.punch_time!).getTime()
+//       );
+
+//       // ---------- 🔥 DEDUPLICATION (CRITICAL FIX) ----------
+//       const seen = new Set<number>();
+//       const punches: IPunch[] = [];
+
+//       for (const p of sortedPunches) {
+//         const time = new Date(p.punch_time!).getTime();
+//         if (!seen.has(time)) {
+//           seen.add(time);
+//           punches.push(p);
+//         }
+//       }
+
+//       let checkInPunch: IPunch | null = null;
+//       let checkOutPunch: IPunch | null = null;
+
+//       // ---------- CORE LOGIC ----------
+//       if (punches.length === 1) {
+//         const t = new Date(punches[0].punch_time!);
+//         if (t.getHours() >= 12) {
+//           checkOutPunch = punches[0]; // ONLY CHECKOUT
+//         } else {
+//           checkInPunch = punches[0]; // ONLY CHECKIN
+//         }
+//       } else if (punches.length > 1) {
+//         checkInPunch = punches[0];
+//         checkOutPunch = punches[punches.length - 1];
+//       }
+
+//       // ---------- CHECK-IN ----------
+//       let checkIn: TimeStatus | null = null;
+//       if (checkInPunch) {
+//         const t = new Date(checkInPunch.punch_time!);
+//         const isLate =
+//           t.getHours() > CHECKIN_CUTOFF_HOUR ||
+//           (t.getHours() === CHECKIN_CUTOFF_HOUR &&
+//             t.getMinutes() > CHECKIN_CUTOFF_MIN);
+
+//         checkIn = {
+//           time: formatTime(t),
+//           status: isLate ? "Late" : "Present",
+//         };
+//       }
+
+//       // ---------- CHECK-OUT ----------
+//       let checkOut: TimeStatus | null = null;
+//       if (checkOutPunch) {
+//         const t = new Date(checkOutPunch.punch_time!);
+//         const isEarly =
+//           t.getHours() < CHECKOUT_CUTOFF_HOUR ||
+//           (t.getHours() === CHECKOUT_CUTOFF_HOUR &&
+//             t.getMinutes() < CHECKOUT_CUTOFF_MIN);
+
+//         checkOut = {
+//           time: formatTime(t),
+//           status: isEarly ? "Early Out" : "Checkout",
+//         };
+//       }
+
+//       // ---------- TOTAL HOURS ----------
+//       let totalHours = 0;
+//       if (checkInPunch && checkOutPunch) {
+//         const inTime = new Date(checkInPunch.punch_time!);
+//         const outTime = new Date(checkOutPunch.punch_time!);
+//         if (outTime > inTime) {
+//           totalHours = Math.floor(
+//             (outTime.getTime() - inTime.getTime()) / 60000
+//           );
+//         }
+//       }
+
+//       // ---------- SAVE DAY ----------
+//       const basePunch = checkInPunch || checkOutPunch;
+
+//       const dayRecord: EmployeeDay = {
+//         emp_code: Number(empId),
+//         first_name: extractEmployeeName(basePunch),
+//         department: basePunch?.raw?.department || "Department",
+//         position: basePunch?.raw?.position || "Unknown",
+//         date: dateKey,
+//         checkIn,
+//         checkOut,
+//         totalHours,
+//         raw: basePunch?.raw || {},
+//       };
+
+//       await EmployeeDayModel.updateOne(
+//         { emp_code: Number(empId), date: dateKey },
+//         { $set: dayRecord },
+//         { upsert: true }
+//       );
+
+//       result.push(dayRecord);
+//     }
+//   }
+
+//   return result;
+// }
+
+async getEmployeeHours(
+  options: FetchPunchesOptions = {}
+): Promise<EmployeeDay[]> {
 
   // ===== CONFIG =====
   const CHECKIN_CUTOFF_HOUR = 8;
   const CHECKIN_CUTOFF_MIN = 30;
-
-  const CHECKOUT_CUTOFF_HOUR = 15;
-  const CHECKOUT_CUTOFF_MIN = 30;
+  const CHECKOUT_DECISION_HOUR = 10; // 🔥 YOUR RULE
 
   // ===== DATE RANGE =====
   const today = new Date().toISOString().slice(0, 10);
+
   const start = options.start_time
     ? new Date(options.start_time)
     : new Date(`${today}T00:00:00.000Z`);
@@ -312,96 +465,51 @@ async getEmployeeHours(options: FetchPunchesOptions = {}): Promise<EmployeeDay[]
   for (const empId in employeesMap) {
     for (const dateKey in employeesMap[empId]) {
 
-      // ---------- SORT ----------
-      const sortedPunches = employeesMap[empId][dateKey].sort(
-        (a, b) =>
-          new Date(a.punch_time!).getTime() -
-          new Date(b.punch_time!).getTime()
-      );
+      // 🔥 ONLY FIRST PUNCH MATTERS
+      const punch = employeesMap[empId][dateKey][0];
+      const punchTime = new Date(punch.punch_time!);
 
-      // ---------- 🔥 DEDUPLICATION (CRITICAL FIX) ----------
-      const seen = new Set<number>();
-      const punches: IPunch[] = [];
-
-      for (const p of sortedPunches) {
-        const time = new Date(p.punch_time!).getTime();
-        if (!seen.has(time)) {
-          seen.add(time);
-          punches.push(p);
-        }
-      }
-
-      let checkInPunch: IPunch | null = null;
-      let checkOutPunch: IPunch | null = null;
-
-      // ---------- CORE LOGIC ----------
-      if (punches.length === 1) {
-        const t = new Date(punches[0].punch_time!);
-        if (t.getHours() >= 12) {
-          checkOutPunch = punches[0]; // ONLY CHECKOUT
-        } else {
-          checkInPunch = punches[0]; // ONLY CHECKIN
-        }
-      } else if (punches.length > 1) {
-        checkInPunch = punches[0];
-        checkOutPunch = punches[punches.length - 1];
-      }
-
-      // ---------- CHECK-IN ----------
       let checkIn: TimeStatus | null = null;
-      if (checkInPunch) {
-        const t = new Date(checkInPunch.punch_time!);
+      let checkOut: TimeStatus | null = null;
+
+      // ===== DECISION BASED ON 10 AM =====
+      if (punchTime.getHours() >= CHECKOUT_DECISION_HOUR) {
+        // ✅ CHECKOUT
+        const isEarly =
+          punchTime.getHours() < 15 ||
+          (punchTime.getHours() === 15 && punchTime.getMinutes() < 30);
+
+        checkOut = {
+          time: formatTime(punchTime),
+          status: isEarly ? "Early Out" : "Checkout",
+        };
+      } else {
+        // ✅ CHECKIN
         const isLate =
-          t.getHours() > CHECKIN_CUTOFF_HOUR ||
-          (t.getHours() === CHECKIN_CUTOFF_HOUR &&
-            t.getMinutes() > CHECKIN_CUTOFF_MIN);
+          punchTime.getHours() > CHECKIN_CUTOFF_HOUR ||
+          (punchTime.getHours() === CHECKIN_CUTOFF_HOUR &&
+            punchTime.getMinutes() > CHECKIN_CUTOFF_MIN);
 
         checkIn = {
-          time: formatTime(t),
+          time: formatTime(punchTime),
           status: isLate ? "Late" : "Present",
         };
       }
 
-      // ---------- CHECK-OUT ----------
-      let checkOut: TimeStatus | null = null;
-      if (checkOutPunch) {
-        const t = new Date(checkOutPunch.punch_time!);
-        const isEarly =
-          t.getHours() < CHECKOUT_CUTOFF_HOUR ||
-          (t.getHours() === CHECKOUT_CUTOFF_HOUR &&
-            t.getMinutes() < CHECKOUT_CUTOFF_MIN);
-
-        checkOut = {
-          time: formatTime(t),
-          status: isEarly ? "Early Out" : "Checkout",
-        };
-      }
-
-      // ---------- TOTAL HOURS ----------
-      let totalHours = 0;
-      if (checkInPunch && checkOutPunch) {
-        const inTime = new Date(checkInPunch.punch_time!);
-        const outTime = new Date(checkOutPunch.punch_time!);
-        if (outTime > inTime) {
-          totalHours = Math.floor(
-            (outTime.getTime() - inTime.getTime()) / 60000
-          );
-        }
-      }
-
-      // ---------- SAVE DAY ----------
-      const basePunch = checkInPunch || checkOutPunch;
-
+      // ===== FINAL RECORD (FORCE CLEAN SAVE) =====
       const dayRecord: EmployeeDay = {
         emp_code: Number(empId),
-        first_name: extractEmployeeName(basePunch),
-        department: basePunch?.raw?.department || "Department",
-        position: basePunch?.raw?.position || "Unknown",
+        first_name: extractEmployeeName(punch),
+        department: punch.raw?.department || "Department",
+        position: punch.raw?.position || "Unknown",
         date: dateKey,
+
+        // 🔥 NEVER BOTH
         checkIn,
         checkOut,
-        totalHours,
-        raw: basePunch?.raw || {},
+
+        totalHours: 0,
+        raw: punch.raw || {},
       };
 
       await EmployeeDayModel.updateOne(
@@ -416,7 +524,6 @@ async getEmployeeHours(options: FetchPunchesOptions = {}): Promise<EmployeeDay[]
 
   return result;
 }
-
 
   saveWebhookPunch = async (payload: unknown): Promise<number> => {
     const records = Array.isArray(payload) ? (payload as BioTimePunch[]) : [payload as BioTimePunch];
