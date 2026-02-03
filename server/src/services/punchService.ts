@@ -4,7 +4,7 @@ import PunchModel, { IPunch } from "../models/PunchModel";
 import { BioTimePunch,EmployeeDay, FetchPunchesOptions, TimeStatus } from "../types";
 import logger from "../config/logger";
 import { EmployeeDayModel } from "../models/EmployeeDay";
-import AbsentModel from "../models/AbsentModel";
+
 
 // Helper function to safely extract employee name as string
 function extractEmployeeName(punch: any): string {
@@ -47,7 +47,13 @@ function extractEmployeeName(punch: any): string {
 // helper format
 const formatTime = (date: Date) =>
   date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-// ---------------- Helper: Format Time ----------------
+
+function sanitizeEmployeeDay(record: EmployeeDay): EmployeeDay {
+  if (record.checkIn && record.checkOut && record.checkIn.time === record.checkOut.time) {
+    return { ...record, checkOut: null, totalHours: 0 };
+  }
+  return record;
+}
 
 
 export class PunchService {
@@ -109,313 +115,6 @@ const CHECKOUT_VALID_HOUR = 10; // 10:00 AM
   }
 
  
-// async getEmployeeHours(options: FetchPunchesOptions = {}): Promise<EmployeeDay[]> {
-//   const CHECKIN_CUTOFF_HOUR = 8;
-//   const CHECKIN_CUTOFF_MIN = 30;
-//   const CHECKOUT_CUTOFF_HOUR = 15;
-//   const CHECKOUT_CUTOFF_MIN = 30;
-
-//   const today = new Date().toISOString().slice(0, 10);
-//   const start = options.start_time || new Date(`${today}T00:00:00Z`);
-//   const end = options.end_time || new Date(`${today}T23:59:59Z`);
-
-//   // fetch punches within start & end time
-//   const docs = await PunchModel.find({
-//     punch_time: { $gte: start, $lte: end },
-//   })
-//     .sort({ punch_time: 1 })
-//     .lean();
-
-//   const employeesMap: Record<string, Record<string, IPunch[]>> = {};
-
-//   for (const d of docs) {
-//     const empId = String(d.emp_code);
-//     if (!d.punch_time || !empId) continue;
-
-//     const dateKey = new Date(d.punch_time).toISOString().split("T")[0];
-//     if (!employeesMap[empId]) employeesMap[empId] = {};
-//     if (!employeesMap[empId][dateKey]) employeesMap[empId][dateKey] = [];
-//     employeesMap[empId][dateKey].push(d as unknown as IPunch);
-//   }
-
-//   const result: EmployeeDay[] = [];
-
-//   for (const empId in employeesMap) {
-//     for (const dateKey in employeesMap[empId]) {
-//       const punches = employeesMap[empId][dateKey];
-
-//       // ensure punches sorted
-//           punches.sort(
-//           (a, b) =>
-//             (a.punch_time ? new Date(a.punch_time).getTime() : 0) -
-//             (b.punch_time ? new Date(b.punch_time).getTime() : 0)
-//         );
-      
-//       // const checkInPunch = punches[0] || null;
-//         let checkInPunch: IPunch | null = null;
-//       let checkOutPunch: IPunch | null = null;
-//       if (checkInPunch?.punch_time) {
-//         for (let i = punches.length - 1; i >= 0; i--) {
-//           const punchTime = punches[i].punch_time;
-//           if (!punchTime) continue;
-//           const pTime = new Date(punchTime);
-//           const inTime = new Date(checkInPunch.punch_time);
-//           if (pTime.getTime() <= inTime.getTime()) continue;
-//           if (this.validateCheckout(pTime)) {
-//             checkOutPunch = punches[i];
-//             break;
-//           }
-//         }
-//       }
-//        // ================= ABSENT REMOVE LOGIC (HERE) =================
-//       //  if (checkInPunch?.punch_time || checkOutPunch?.punch_time) {
-//       //   try {
-//       //     const startOfDay = new Date(`${dateKey}T00:00:00.000Z`);
-//       //     const endOfDay = new Date(`${dateKey}T23:59:59.999Z`);
-
-//       //     await AbsentModel.deleteOne({
-            
-//       //       emp_code: Number(empId),
-//       //       date: {
-//       //         $gte: startOfDay,
-//       //         $lte: endOfDay,
-//       //       },
-//       //     });
-//       //   } catch (err) {
-//       //     logger.error(
-//       //       `Failed to remove absent for emp ${empId} on ${dateKey}`,
-//       //       err
-//       //     );
-//       //   }
-//       // }
-
-//       if (checkInPunch?.punch_time || checkOutPunch?.punch_time) {
-//   try {
-//     // Qatar start of today
-//     const qatarToday = new Date(
-//       new Date().toLocaleString("en-US", { timeZone: "Asia/Qatar" })
-//     );
-//     qatarToday.setHours(0, 0, 0, 0);
-
-//     // sirf aaj ka absent remove hoga
-//     if (dateKey === qatarToday.toISOString().slice(0, 10)) {
-//       await AbsentModel.deleteOne({
-//         emp_code: Number(empId),
-//         date: qatarToday,
-//       });
-//     }
-//   } catch (err) {
-//     logger.error(
-//       `Failed to remove absent for emp ${empId} on ${dateKey}`,
-//       err
-//     );
-//   }
-// }
-//       // Check-in
-//       let checkIn: TimeStatus | null = null;
-//       if (checkInPunch?.punch_time) {
-//         const t = new Date(checkInPunch.punch_time);
-//         const isLate =
-//           t.getHours() > CHECKIN_CUTOFF_HOUR ||
-//           (t.getHours() === CHECKIN_CUTOFF_HOUR && t.getMinutes() > CHECKIN_CUTOFF_MIN);
-//         checkIn = { time: formatTime(t), status: isLate ? "Late" : "Present" };
-//       }
-
-//       // Check-out & total hours
-//       let checkOut: TimeStatus | null = null;
-//       let totalHours = 0;
-//       if (checkInPunch?.punch_time && checkOutPunch?.punch_time) {
-//         const inTime = new Date(checkInPunch.punch_time);
-//         const outTime = new Date(checkOutPunch.punch_time);
-
-//         const isEarly =
-//           outTime.getHours() < CHECKOUT_CUTOFF_HOUR ||
-//           (outTime.getHours() === CHECKOUT_CUTOFF_HOUR && outTime.getMinutes() < CHECKOUT_CUTOFF_MIN);
-//         checkOut = { time: formatTime(outTime), status: isEarly ? "Early Out" : "Checkout" };
-
-//         // convert to total minutes (correct)
-//         const diffMs = outTime.getTime() - inTime.getTime();
-//         totalHours = Math.floor(diffMs / 60000)
-//       }
-//         const dayRecord: EmployeeDay = {
-//           emp_code: Number(empId),
-//           first_name: extractEmployeeName(checkInPunch),
-//           department: checkInPunch?.raw?.department || "Department",
-//           position: checkInPunch?.raw?.position || "Unknown",
-//           date: dateKey,
-//           checkIn,
-//           checkOut,
-//           totalHours,
-//           raw: checkInPunch?.raw || {}
-//         };
-
-//   try {
-//     await EmployeeDayModel.updateOne(
-//       { emp_code: empId, date: dateKey },
-//       { $set: dayRecord },
-//       { upsert: true }
-//     );
-//   } catch (err) {
-//     logger.error(`Failed to save EmployeeDay for ${empId} on ${dateKey}:`, err);
-//   }
-//      result.push(dayRecord);
-//     }
-//   }
-
-//   return result;
-// }
-
-// async getEmployeeHours(options: FetchPunchesOptions = {}): Promise<EmployeeDay[]> {
-
-//   // ===== CONFIG =====
-//   const CHECKIN_CUTOFF_HOUR = 8;
-//   const CHECKIN_CUTOFF_MIN = 30;
-
-//   const CHECKOUT_CUTOFF_HOUR = 15;
-//   const CHECKOUT_CUTOFF_MIN = 30;
-
-//   // ===== DATE RANGE =====
-//   const today = new Date().toISOString().slice(0, 10);
-//   const start = options.start_time
-//     ? new Date(options.start_time)
-//     : new Date(`${today}T00:00:00.000Z`);
-
-//   const end = options.end_time
-//     ? new Date(options.end_time)
-//     : new Date(`${today}T23:59:59.999Z`);
-
-//   // ===== FETCH PUNCHES =====
-//   const docs = await PunchModel.find({
-//     punch_time: { $gte: start, $lte: end },
-//   })
-//     .sort({ punch_time: 1 })
-//     .lean<IPunch[]>();
-
-//   // ===== GROUP BY EMP + DATE =====
-//   const employeesMap: Record<string, Record<string, IPunch[]>> = {};
-
-//   for (const d of docs) {
-//     if (!d.punch_time || !d.emp_code) continue;
-
-//     const empId = String(d.emp_code);
-//     const dateKey = new Date(d.punch_time).toISOString().split("T")[0];
-
-//     if (!employeesMap[empId]) employeesMap[empId] = {};
-//     if (!employeesMap[empId][dateKey]) employeesMap[empId][dateKey] = [];
-
-//     employeesMap[empId][dateKey].push(d);
-//   }
-
-//   const result: EmployeeDay[] = [];
-
-//   // ===== PROCESS =====
-//   for (const empId in employeesMap) {
-//     for (const dateKey in employeesMap[empId]) {
-
-//       // ---------- SORT ----------
-//       const sortedPunches = employeesMap[empId][dateKey].sort(
-//         (a, b) =>
-//           new Date(a.punch_time!).getTime() -
-//           new Date(b.punch_time!).getTime()
-//       );
-
-//       // ---------- 🔥 DEDUPLICATION (CRITICAL FIX) ----------
-//       const seen = new Set<number>();
-//       const punches: IPunch[] = [];
-
-//       for (const p of sortedPunches) {
-//         const time = new Date(p.punch_time!).getTime();
-//         if (!seen.has(time)) {
-//           seen.add(time);
-//           punches.push(p);
-//         }
-//       }
-
-//       let checkInPunch: IPunch | null = null;
-//       let checkOutPunch: IPunch | null = null;
-
-//       // ---------- CORE LOGIC ----------
-//       if (punches.length === 1) {
-//         const t = new Date(punches[0].punch_time!);
-//         if (t.getHours() >= 12) {
-//           checkOutPunch = punches[0]; // ONLY CHECKOUT
-//         } else {
-//           checkInPunch = punches[0]; // ONLY CHECKIN
-//         }
-//       } else if (punches.length > 1) {
-//         checkInPunch = punches[0];
-//         checkOutPunch = punches[punches.length - 1];
-//       }
-
-//       // ---------- CHECK-IN ----------
-//       let checkIn: TimeStatus | null = null;
-//       if (checkInPunch) {
-//         const t = new Date(checkInPunch.punch_time!);
-//         const isLate =
-//           t.getHours() > CHECKIN_CUTOFF_HOUR ||
-//           (t.getHours() === CHECKIN_CUTOFF_HOUR &&
-//             t.getMinutes() > CHECKIN_CUTOFF_MIN);
-
-//         checkIn = {
-//           time: formatTime(t),
-//           status: isLate ? "Late" : "Present",
-//         };
-//       }
-
-//       // ---------- CHECK-OUT ----------
-//       let checkOut: TimeStatus | null = null;
-//       if (checkOutPunch) {
-//         const t = new Date(checkOutPunch.punch_time!);
-//         const isEarly =
-//           t.getHours() < CHECKOUT_CUTOFF_HOUR ||
-//           (t.getHours() === CHECKOUT_CUTOFF_HOUR &&
-//             t.getMinutes() < CHECKOUT_CUTOFF_MIN);
-
-//         checkOut = {
-//           time: formatTime(t),
-//           status: isEarly ? "Early Out" : "Checkout",
-//         };
-//       }
-
-//       // ---------- TOTAL HOURS ----------
-//       let totalHours = 0;
-//       if (checkInPunch && checkOutPunch) {
-//         const inTime = new Date(checkInPunch.punch_time!);
-//         const outTime = new Date(checkOutPunch.punch_time!);
-//         if (outTime > inTime) {
-//           totalHours = Math.floor(
-//             (outTime.getTime() - inTime.getTime()) / 60000
-//           );
-//         }
-//       }
-
-//       // ---------- SAVE DAY ----------
-//       const basePunch = checkInPunch || checkOutPunch;
-
-//       const dayRecord: EmployeeDay = {
-//         emp_code: Number(empId),
-//         first_name: extractEmployeeName(basePunch),
-//         department: basePunch?.raw?.department || "Department",
-//         position: basePunch?.raw?.position || "Unknown",
-//         date: dateKey,
-//         checkIn,
-//         checkOut,
-//         totalHours,
-//         raw: basePunch?.raw || {},
-//       };
-
-//       await EmployeeDayModel.updateOne(
-//         { emp_code: Number(empId), date: dateKey },
-//         { $set: dayRecord },
-//         { upsert: true }
-//       );
-
-//       result.push(dayRecord);
-//     }
-//   }
-
-//   return result;
-// }
 
 async getEmployeeHours(
   options: FetchPunchesOptions = {}
@@ -461,68 +160,99 @@ async getEmployeeHours(
 
   const result: EmployeeDay[] = [];
 
-  // ===== PROCESS =====
+  // ===== PROCESS (first punch = checkIn, last punch = checkOut) =====
   for (const empId in employeesMap) {
     for (const dateKey in employeesMap[empId]) {
 
-      // 🔥 ONLY FIRST PUNCH MATTERS
-      const punch = employeesMap[empId][dateKey][0];
-      const punchTime = new Date(punch.punch_time!);
+      const punches = employeesMap[empId][dateKey];
+      const firstPunch = punches[0];
+      const lastPunch = punches[punches.length - 1];
+
+      const firstPunchTime = new Date(firstPunch.punch_time!);
+      const lastPunchTime = new Date(lastPunch.punch_time!);
 
       let checkIn: TimeStatus | null = null;
       let checkOut: TimeStatus | null = null;
 
-      // ===== DECISION BASED ON 10 AM =====
-      if (punchTime.getHours() >= CHECKOUT_DECISION_HOUR) {
-        // ✅ CHECKOUT
-        const isEarly =
-          punchTime.getHours() < 15 ||
-          (punchTime.getHours() === 15 && punchTime.getMinutes() < 30);
-
-        checkOut = {
-          time: formatTime(punchTime),
-          status: isEarly ? "Early Out" : "Checkout",
-        };
-      } else {
-        // ✅ CHECKIN
+      // ===== CHECKIN (first punch before 10 AM) =====
+      if (firstPunchTime.getHours() < CHECKOUT_DECISION_HOUR) {
         const isLate =
-          punchTime.getHours() > CHECKIN_CUTOFF_HOUR ||
-          (punchTime.getHours() === CHECKIN_CUTOFF_HOUR &&
-            punchTime.getMinutes() > CHECKIN_CUTOFF_MIN);
+          firstPunchTime.getHours() > CHECKIN_CUTOFF_HOUR ||
+          (firstPunchTime.getHours() === CHECKIN_CUTOFF_HOUR &&
+            firstPunchTime.getMinutes() > CHECKIN_CUTOFF_MIN);
 
         checkIn = {
-          time: formatTime(punchTime),
+          time: formatTime(firstPunchTime),
           status: isLate ? "Late" : "Present",
         };
       }
 
-      // ===== FINAL RECORD (FORCE CLEAN SAVE) =====
+      // ===== CHECKOUT: only when (a) 2+ punches with different times, or (b) 1 punch after 10 AM =====
+      // Single punch or duplicate same-time punches → never set both In and Out
+      const hasRealCheckout =
+        (punches.length > 1 && lastPunchTime.getTime() > firstPunchTime.getTime()) ||
+        (punches.length === 1 && firstPunchTime.getHours() >= CHECKOUT_DECISION_HOUR);
+
+      if (hasRealCheckout) {
+        const checkoutTime = lastPunchTime;
+        const isEarly =
+          checkoutTime.getHours() < 15 ||
+          (checkoutTime.getHours() === 15 && checkoutTime.getMinutes() < 30);
+
+        checkOut = {
+          time: formatTime(checkoutTime),
+          status: isEarly ? "Early Out" : "Checkout",
+        };
+      }
+
+      // ===== TOTAL HOURS =====
+      let totalHours = 0;
+      if (checkIn && checkOut) {
+        const diffMs = lastPunchTime.getTime() - firstPunchTime.getTime();
+        totalHours = Math.round((diffMs / (1000 * 60 * 60)) * 100) / 100;
+      }
+
+      // ===== BUILD RECORD (clear fake checkout: same time as checkIn) =====
+      let finalCheckOut = checkOut;
+      if (checkIn && checkOut && checkIn.time === checkOut.time) {
+        finalCheckOut = null;
+        totalHours = 0;
+      }
+
       const dayRecord: EmployeeDay = {
         emp_code: Number(empId),
-        first_name: extractEmployeeName(punch),
-        department: punch.raw?.department || "Department",
-        position: punch.raw?.position || "Unknown",
-        date: dateKey,
-
-        // 🔥 NEVER BOTH
+        first_name: extractEmployeeName(firstPunch),
+        department: firstPunch.raw?.department || "Department",
+        position: firstPunch.raw?.position || "Unknown",
+        date: new Date(dateKey),
         checkIn,
-        checkOut,
-
-        totalHours: 0,
-        raw: punch.raw || {},
+        checkOut: finalCheckOut,
+        totalHours,
+        raw: firstPunch.raw || {},
       };
 
-      await EmployeeDayModel.updateOne(
-        { emp_code: Number(empId), date: dateKey },
-        { $set: dayRecord },
-        { upsert: true }
-      );
+      // Cannot use $set and $unset on same path in one update — use only $unset when clearing checkOut
+      if (finalCheckOut === null) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- intentionally omit checkOut for $unset
+        const { checkOut: _omit, ...setFields } = dayRecord;
+        await EmployeeDayModel.updateOne(
+          { emp_code: Number(empId), date: dateKey },
+          { $set: setFields, $unset: { checkOut: 1 } },
+          { upsert: true }
+        );
+      } else {
+        await EmployeeDayModel.updateOne(
+          { emp_code: Number(empId), date: dateKey },
+          { $set: dayRecord },
+          { upsert: true }
+        );
+      }
 
       result.push(dayRecord);
     }
   }
 
-  return result;
+  return result.map(sanitizeEmployeeDay);
 }
 
   saveWebhookPunch = async (payload: unknown): Promise<number> => {
@@ -542,41 +272,38 @@ async getEmployeeHours(
     return saved;
   };
 
-async searchEmployeeDash(userId: string, search: string, filter: string) {
- 
-       interface QueryType {
-        name?: { $regex: string; $options: string };
-        $or?: Array<any>;
+  searchEmployeeDash = async (userId: string, search: string, filter: string) => {
+    interface QueryType {
+      first_name?: { $regex: string; $options: string };
+      $or?: Array<any>;
     }
 
-
-    // INITIAL EMPTY QUERY
     const query: QueryType = {};
 
-       // SEARCH BY EMPLOYEE NAME
     if (search) {
-        query.name = { $regex: search, $options: "i" };
+      query.first_name = { $regex: search, $options: "i" };
     }
 
-    // filter logic
-      if (filter && filter !== "all") {
-        query.$or = [
-            { "checkIn.status": filter },
-            { "checkOut.status": filter }
-        ];
+    if (filter && filter !== "all") {
+      query.$or = [
+        { "checkIn.status": filter },
+        { "checkOut.status": filter },
+      ];
     }
 
-       const total = await EmployeeDayModel.countDocuments(query);
+    const total = await EmployeeDayModel.countDocuments(query);
 
     const employees = await EmployeeDayModel
-        .find(query)
-        .sort({ createdAt: -1 });
+      .find(query)
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const sanitized = (employees as EmployeeDay[]).map(sanitizeEmployeeDay);
 
     return {
-        employees,
-        total,
+      employees: sanitized,
+      total,
     };
-}
-
+  };
 }
 

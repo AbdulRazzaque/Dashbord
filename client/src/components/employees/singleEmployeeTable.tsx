@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatDate } from "@/lib/utils";
 
 const formatHours = (minutes: number) => {
   const m = Math.max(0, Math.round(minutes));
@@ -56,10 +57,11 @@ export default function getSingleEmployeeTable({
         <Table>
           <TableHeader>
             <TableRow>
-                 <TableHead>Sr No</TableHead>
+              
                          <TableHead>Employee</TableHead>
                          <TableHead>Date</TableHead>
                          <TableHead>Employee ID</TableHead>
+                 
                          <TableHead>Check In / Out</TableHead>
                          <TableHead>Total Hours</TableHead>
                          <TableHead>Status</TableHead>
@@ -98,14 +100,12 @@ export default function getSingleEmployeeTable({
                   </div>
                 </TableCell>
                   <TableCell className="font-medium text-card-foreground/80">
-                    {employee.date}
+                    {formatDate(employee.date)}
                   </TableCell>
 
-                  <TableCell>{employee.first_name}</TableCell>
+                  <TableCell>{employee.emp_code}</TableCell>
 
-                   <TableCell>{employee.emp_code}</TableCell>
-                 
-                                   <TableCell>
+                   <TableCell>
                                      <div className="text-sm space-y-1">
                                        <div className="flex items-center gap-2">
                                          <span className="text-green-600">●</span>
@@ -113,15 +113,21 @@ export default function getSingleEmployeeTable({
                                        </div>
                                        <div className="flex items-center gap-2">
                                          <span className="text-red-600">●</span>
-                                         Out: {employee.checkOut?.time || "-"}
+                                         Out: {employee.checkOut && employee.checkOut.time !== employee.checkIn?.time ? employee.checkOut.time : "-"}
                                        </div>
                                      </div>
                                    </TableCell>
-                 
-                                   <TableCell>{formatHours(employee.totalHours)}</TableCell>
-                                   <TableCell>{(employee.status)}</TableCell>
-
-            
+                                   <TableCell>
+                                     {employee.totalHours}
+                                   </TableCell>
+                                   <TableCell>
+                                     {employee.checkIn?.status || ""}
+                                     {employee.checkOut && employee.checkOut.time !== employee.checkIn?.time ? ` ${employee.checkOut.status || ""}` : ""}
+                                   </TableCell>
+                                  
+                                     
+                                  
+                                   
                 </TableRow>
               ))
             )}

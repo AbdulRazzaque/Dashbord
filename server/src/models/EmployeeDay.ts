@@ -6,7 +6,7 @@ const EmployeeDaySchema = new Schema ({
   first_name: { type: String, required: true },
   department: { type: String, default: "Unknown" },
   position: { type: String, default: "Unknown" },
-  date: { type: String, required: true },
+  date: { type: Date, required: true },
   status: {
     type: String,
     enum: ["Present"],

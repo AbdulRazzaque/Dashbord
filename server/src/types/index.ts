@@ -103,7 +103,7 @@ export interface EmployeeDay {
       first_name: string;
       department: string;
       position: string;
-      date: string;
+      date: Date;
       checkIn: TimeStatus | null;
       checkOut: TimeStatus | null;
       totalHours: number;

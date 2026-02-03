@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatDate } from "@/lib/utils";
 
 const formatHours = (minutes: number) => {
   const m = Math.max(0, Math.round(minutes));
@@ -103,7 +104,7 @@ export default function AttendanceSummaryTable({
                   </div>
                 </TableCell>
                   <TableCell className="font-medium text-card-foreground/80">
-                    {employee.date}
+                    {formatDate(employee.date)}
                   </TableCell>
                   <TableCell>{employee.emp_code}</TableCell>
 
@@ -115,12 +116,14 @@ export default function AttendanceSummaryTable({
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-red-600">●</span>
-                        Out: {employee.checkOut?.time || "-"}
+                        Out: {employee.checkOut && employee.checkOut.time !== employee.checkIn?.time ? employee.checkOut.time : "-"}
                       </div>
                     </div>
                   </TableCell>
 
-                  <TableCell>{formatHours(employee.totalHours)}</TableCell>
+                  <TableCell>
+                    {employee.totalHours || 0}
+                                   </TableCell>
 
                   <TableCell className="flex flex-col  w-max">
                     <div
@@ -129,13 +132,14 @@ export default function AttendanceSummaryTable({
                     >
                       {employee?.checkIn?.status || ""}
                     </div>
-
+                    {employee.checkOut && employee.checkOut.time !== employee.checkIn?.time && (
                     <div
                       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full 
                 ${getStatusColor(employee?.checkOut?.status || "No Status")}`}
                     >
                       {employee?.checkOut?.status || ""}
                     </div>
+                    )}
                   </TableCell>
                 </TableRow>
               ))
