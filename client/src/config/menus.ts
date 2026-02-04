@@ -2,7 +2,7 @@
 
 import { RolesEnum, RoleType } from "@/constants";
 import {
-  LayoutDashboard,Grid,UserCheck,Users,UserX
+  LayoutDashboard,Grid,UserCheck,Users,UserX, LayoutGrid
 } from "lucide-react";
 
 export interface MenuItemProps {
@@ -50,6 +50,13 @@ export const menusConfig = {
         title: "Absent Employees",
         icon: UserX ,
         href: "/dashboard/absent",
+        requiredRole: [RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN],
+      },
+   
+      {
+        title: "Report",
+        icon: LayoutGrid ,
+        href: "/dashboard/report",
         requiredRole: [RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN],
       },
    
