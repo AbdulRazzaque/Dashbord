@@ -169,8 +169,6 @@ export class ReportService {
       const isFutureDay = day > lastDayToShow;
       const date = new Date(Date.UTC(year, month, day));
       const dateStr = date.toISOString().slice(0, 10);
-      const dayOfWeek = date.getUTCDay();
-      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
       for (const emp of employees) {
         if (isFutureDay) continue;
@@ -185,9 +183,7 @@ export class ReportService {
         let hoursWorked = 0;
         let overtime = 0;
 
-        if (isWeekend) {
-          status = "weekend";
-        } else if (presentSet.has(`${ec}-${dateStr}`)) {
+        if (presentSet.has(`${ec}-${dateStr}`)) {
           status = "present";
           const dayPunches = empPunches[ec]?.[dateStr];
           if (dayPunches?.length) {

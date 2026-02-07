@@ -115,7 +115,6 @@ export function EmployeeDayDetailsTable({
             </TableHeader>
             <TableBody>
               {sorted.map((record) => {
-                const isWeekend = record.status === "weekend";
                 const isAbsent = record.status === "absent";
                 const isPresent = record.status === "present";
                 return (
@@ -151,11 +150,6 @@ export function EmployeeDayDetailsTable({
                         >
                           Absent
                         </Badge>
-                      )}
-                      {isWeekend && (
-                        <span className="text-muted-foreground text-sm">
-                          Weekend
-                        </span>
                       )}
                     </TableCell>
                   </TableRow>

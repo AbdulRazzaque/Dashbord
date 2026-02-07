@@ -74,7 +74,7 @@ export default function Page() {
   );
 
   return (
-    <div className="container mx-auto py-6 px-4">
+    <div className=" mx-auto py-6 px-4">
       <BreadCrumb items={breadcrumbItems} />
 
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -109,11 +109,8 @@ export default function Page() {
         <p className="text-destructive mb-4">{error}</p>
       )}
 
-      <div className="space-y-6">
-        <EmployeeDayDetailsTable
-          dailyRecords={dailyRecords}
-          loading={loading}
-        />
+      <div className="">
+        
 
         <AttendanceMatrix
           selectedMonth={selectedMonth}

@@ -132,8 +132,8 @@ export interface AbsentType {
 export interface AbsentSearchOptions extends SearchParams {}
 
 // ----- Report module (frontend Report section) -----
-// Present and absent only (no Leave policy). Weekend is returned for blank cells.
-export type ReportDailyStatus = "present" | "absent" | "weekend";
+// Present and absent only (no weekend/leave policy).
+export type ReportDailyStatus = "present" | "absent";
 
 export interface ReportEmployee {
   id: string;

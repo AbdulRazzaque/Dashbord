@@ -198,10 +198,7 @@ export interface ReportDailyRecord {
   checkIn: string;
   checkOut: string;
   hoursWorked: number;
-  status: "present" | "absent" | "weekend";
-  overtime: number;
-  tasks: number;
-  performance: number;
+  status: "present" | "absent" ;
 }
 
 export const getReportEmployees = (params?: { search?: string }) =>

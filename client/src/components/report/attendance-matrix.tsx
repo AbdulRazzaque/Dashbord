@@ -77,7 +77,6 @@ export function AttendanceMatrix({ selectedMonth, selectedEmployeeId = "all", in
       })
       .finally(() => setLoading(false))
   }, [year, month, selectedEmployeeId, searchTerm, statusFilter, initialData])
-
   const recordsByEmployee = useMemo(() => {
     const map = new Map<string, Map<number, ReportDailyRecord>>()
     for (const record of dailyRecords) {
@@ -90,8 +89,8 @@ export function AttendanceMatrix({ selectedMonth, selectedEmployeeId = "all", in
     return map
   }, [dailyRecords])
 
-  const filteredEmployees = employees
 
+  const filteredEmployees = employees
   const getStatusForDay = (employeeId: string, day: number): ReportDailyRecord["status"] | null => {
     return recordsByEmployee.get(employeeId)?.get(day)?.status ?? null
   }
@@ -190,13 +189,10 @@ export function AttendanceMatrix({ selectedMonth, selectedEmployeeId = "all", in
                 {days.map((day) => {
                   const date = new Date(year, month, day)
                   const dayName = date.toLocaleString("default", { weekday: "short" })
-                  const isWeekend = date.getDay() === 0 || date.getDay() === 6
                   return (
                     <div
                       key={day}
-                      className={`flex min-w-[2.7rem]  flex-shrink-0 flex-col items-center justify-center border-r border-border py-2 ${
-                        isWeekend ? "bg-muted/50" : ""
-                      }`}
+                      className="flex min-w-[2.7rem] flex-shrink-0 flex-col items-center justify-center border-r border-border py-2"
                     >
                       <span className="text-[10px] text-muted-foreground">{dayName}</span>
                       <span className="text-xs font-medium text-foreground">{day}</span>
@@ -226,15 +222,11 @@ export function AttendanceMatrix({ selectedMonth, selectedEmployeeId = "all", in
                     {days.map((day) => {
                       const record = getRecordForDay(emp.id, day)
                       const status = record?.status ?? null
-                      const date = new Date(year, month, day)
-                      const isWeekend = date.getDay() === 0 || date.getDay() === 6
                       const hasTimes = record && (record.checkIn || record.checkOut)
                       return (
                         <div
                           key={day}
-                          className={`flex min-w-[2.7rem] flex-shrink-0 flex-col items-center justify-center gap-0.5 border-r border-border py-2 ${
-                            isWeekend ? "bg-muted/30" : ""
-                          }`}
+                          className="flex min-w-[2.7rem] flex-shrink-0 flex-col items-center justify-center gap-0.5 border-r border-border py-2"
                           title={`${emp.name} - Day ${day}: ${status ?? ""}${hasTimes ? ` | In: ${record.checkIn || "—"} Out: ${record.checkOut || "—"}` : ""}`}
                         >
                           {status && (status === "present" || status === "absent") && (
