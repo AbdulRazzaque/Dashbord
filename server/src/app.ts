@@ -10,6 +10,7 @@ import punchRoutes from "./routes/punchRoutes";
 import employeeRoutes from "./routes/employeeRoutes";
 import healthRoutes from "./routes/healthRoutes";
 import absentRoutes from "./routes/absentRoutes";
+import reportRoutes from "./routes/reportRoutes";
 // import "../cron/absent.cron";
 import '../src/cron/absent.cron';
 dotenv.config();
@@ -36,6 +37,7 @@ app.use("/api", healthRoutes);
 app.use("/api", employeeRoutes);
 app.use("/api", punchRoutes);
 app.use("/api", absentRoutes);
+app.use("/api", reportRoutes);
 app.get("/api/proxy", async (req, res) => {
   const path = req.query.path as string;
   if (!path?.startsWith("/")) return res.status(400).json({ ok: false, message: "Invalid path" });

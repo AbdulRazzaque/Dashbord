@@ -182,3 +182,46 @@ export const getAbsentEmployee = async (
 };
 
 export const singleAbsentEmployee = (id: string) => api.get(`/api/singleAbsentEmployee/${id}`);
+
+/* Report API */
+export interface ReportEmployee {
+  id: string;
+  name: string;
+  employeeId: string;
+  emp_code: number;
+  avatar: string;
+}
+
+export interface ReportDailyRecord {
+  date: string;
+  employeeId: string;
+  checkIn: string;
+  checkOut: string;
+  hoursWorked: number;
+  status: "present" | "absent" | "weekend";
+  overtime: number;
+  tasks: number;
+  performance: number;
+}
+
+export const getReportEmployees = (params?: { search?: string }) =>
+  api.get<{ ok: boolean; count: number; data: ReportEmployee[] }>("/api/reports/employees", {
+    params: params ?? {},
+  });
+
+export const getReportMonthlyMatrix = (params: {
+  year: number;
+  month: number;
+  employeeId?: string;
+  search?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+}) =>
+  api.get<{
+    ok: boolean;
+    employees: ReportEmployee[];
+    dailyRecords: ReportDailyRecord[];
+    totalEmployees: number;
+    totalRecords: number;
+  }>("/api/reports/monthly-matrix", { params });

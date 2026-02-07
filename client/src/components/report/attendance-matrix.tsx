@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
@@ -11,37 +11,76 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Search, Check, X, Clock, Palmtree, CalendarOff } from "lucide-react"
-import { employees, getMonthlyData, type DailyRecord } from './employee-data'
+import { Search, Check, X, Loader2, FileDown } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { getReportMonthlyMatrix, type ReportEmployee, type ReportDailyRecord } from "@/lib/http/api"
+import { exportAttendanceMatrixToExcel } from "@/lib/excel-export"
 
 interface AttendanceMatrixProps {
   selectedMonth: Date
+  selectedEmployeeId?: string
+  /** When provided (e.g. from employees/view), use this data and skip fetch */
+  initialData?: {
+    employees: ReportEmployee[]
+    dailyRecords: ReportDailyRecord[]
+  }
 }
 
-const statusConfig = {
+const statusConfig: Record<string, { icon: typeof Check; color: string; short: string }> = {
   present: { icon: Check, color: "bg-emerald-500/20 text-emerald-400", short: "P" },
   absent: { icon: X, color: "bg-red-500/20 text-red-400", short: "A" },
-  // "half-day": { icon: Clock, color: "bg-amber-500/20 text-amber-400", short: "H" },
-  // leave: { icon: Palmtree, color: "bg-blue-500/20 text-blue-400", short: "L" },
-  // holiday: { icon: CalendarOff, color: "bg-purple-500/20 text-purple-400", short: "HO" },
-  // weekend: { icon: CalendarOff, color: "bg-muted text-muted-foreground", short: "W" },
 }
 
-export function AttendanceMatrix({ selectedMonth }: AttendanceMatrixProps) {
+export function AttendanceMatrix({ selectedMonth, selectedEmployeeId = "all", initialData }: AttendanceMatrixProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const [departmentFilter, setDepartmentFilter] = useState("all")
+
   const [statusFilter, setStatusFilter] = useState("all")
+  const [employees, setEmployees] = useState<ReportEmployee[]>(initialData?.employees ?? [])
+  const [dailyRecords, setDailyRecords] = useState<ReportDailyRecord[]>(initialData?.dailyRecords ?? [])
+  const [loading, setLoading] = useState(!initialData)
+  const [error, setError] = useState<string | null>(null)
 
   const year = selectedMonth.getFullYear()
   const month = selectedMonth.getMonth()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
 
-  const allRecords = useMemo(() => getMonthlyData(year, month), [year, month])
+  useEffect(() => {
+    if (initialData) {
+      setEmployees(initialData.employees)
+      setDailyRecords(initialData.dailyRecords)
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    setError(null)
+    getReportMonthlyMatrix({
+      year,
+      month,
+      ...(selectedEmployeeId && selectedEmployeeId !== "all" ? { employeeId: selectedEmployeeId } : {}),
+      search: searchTerm.trim() || undefined,
+      status: statusFilter !== "all" ? statusFilter : undefined,
+    })
+      .then((res) => {
+        if (res.data?.ok) {
+          setEmployees(res.data.employees ?? [])
+          setDailyRecords(res.data.dailyRecords ?? [])
+        } else {
+          setEmployees([])
+          setDailyRecords([])
+        }
+      })
+      .catch((err) => {
+        setError(err?.response?.data?.message ?? "Failed to load attendance data")
+        setEmployees([])
+        setDailyRecords([])
+      })
+      .finally(() => setLoading(false))
+  }, [year, month, selectedEmployeeId, searchTerm, statusFilter, initialData])
 
   const recordsByEmployee = useMemo(() => {
-    const map = new Map<string, Map<number, DailyRecord>>()
-    for (const record of allRecords) {
+    const map = new Map<string, Map<number, ReportDailyRecord>>()
+    for (const record of dailyRecords) {
       const day = new Date(record.date).getDate()
       if (!map.has(record.employeeId)) {
         map.set(record.employeeId, new Map())
@@ -49,39 +88,32 @@ export function AttendanceMatrix({ selectedMonth }: AttendanceMatrixProps) {
       map.get(record.employeeId)?.set(day, record)
     }
     return map
-  }, [allRecords])
+  }, [dailyRecords])
 
-  const departments = useMemo(
-    () => [...new Set(employees.map((e) => e.department))],
-    []
-  )
+  const filteredEmployees = employees
 
-  const filteredEmployees = useMemo(() => {
-    return employees.filter((emp) => {
-      const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesDept = departmentFilter === "all" || emp.department === departmentFilter
-      
-      if (statusFilter === "all") {
-        return matchesSearch && matchesDept
-      }
-      
-      const empRecords = recordsByEmployee.get(emp.id)
-      if (!empRecords) return false
-      
-      const hasStatus = Array.from(empRecords.values()).some(
-        (r) => r.status === statusFilter
-      )
-      return matchesSearch && matchesDept && hasStatus
-    })
-  }, [searchTerm, departmentFilter, statusFilter, recordsByEmployee])
+  const getStatusForDay = (employeeId: string, day: number): ReportDailyRecord["status"] | null => {
+    return recordsByEmployee.get(employeeId)?.get(day)?.status ?? null
+  }
 
-  const getStatusForDay = (employeeId: string, day: number): DailyRecord["status"] | null => {
-    return recordsByEmployee.get(employeeId)?.get(day)?.status || null
+  const getRecordForDay = (employeeId: string, day: number): ReportDailyRecord | null => {
+    return recordsByEmployee.get(employeeId)?.get(day) ?? null
   }
 
   const monthName = selectedMonth.toLocaleString("default", { month: "long", year: "numeric" })
 
+  if (error) {
+    return (
+      <Card className="border-border bg-card">
+        <CardContent className="py-8 text-center text-destructive">
+          {error}
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
+    
     <Card className="border-border bg-card">
       <CardHeader className="pb-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -90,10 +122,27 @@ export function AttendanceMatrix({ selectedMonth }: AttendanceMatrixProps) {
               All Employees Attendance - {monthName}
             </CardTitle>
             <p className="mt-1 text-sm text-muted-foreground">
-              Showing {filteredEmployees.length} of {employees.length} employees
+              {loading ? "Loading..." : `Showing ${filteredEmployees.length} employees`}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              disabled={loading || employees.length === 0}
+              onClick={() =>
+                exportAttendanceMatrixToExcel(
+                  employees.map((e) => ({ id: e.id, name: e.name, employeeId: e.employeeId, emp_code: e.emp_code })),
+                  dailyRecords.map((r) => ({ date: r.date, employeeId: r.employeeId, status: r.status })),
+                  year,
+                  month
+                )
+              }
+            >
+              <FileDown className="h-4 w-4" />
+              Export to Excel
+            </Button>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -103,7 +152,6 @@ export function AttendanceMatrix({ selectedMonth }: AttendanceMatrixProps) {
                 className="w-48 bg-secondary pl-9"
               />
             </div>
-           
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-36 bg-secondary">
                 <SelectValue placeholder="Status" />
@@ -112,8 +160,6 @@ export function AttendanceMatrix({ selectedMonth }: AttendanceMatrixProps) {
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="present">Present</SelectItem>
                 <SelectItem value="absent">Absent</SelectItem>
-                <SelectItem value="leave">Leave</SelectItem>
-                <SelectItem value="half-day">Half Day</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -128,6 +174,12 @@ export function AttendanceMatrix({ selectedMonth }: AttendanceMatrixProps) {
         </div>
       </CardHeader>
       <CardContent className="p-0">
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        )}
+        {!loading && (
         <div className="overflow-auto">
           <div className="min-w-[1200px]">
             <div className="sticky top-0 z-10 flex border-b border-border bg-secondary">
@@ -142,7 +194,7 @@ export function AttendanceMatrix({ selectedMonth }: AttendanceMatrixProps) {
                   return (
                     <div
                       key={day}
-                      className={`flex w-10 flex-shrink-0 flex-col items-center justify-center border-r border-border py-2 ${
+                      className={`flex min-w-[2.7rem]  flex-shrink-0 flex-col items-center justify-center border-r border-border py-2 ${
                         isWeekend ? "bg-muted/50" : ""
                       }`}
                     >
@@ -167,29 +219,38 @@ export function AttendanceMatrix({ selectedMonth }: AttendanceMatrixProps) {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-medium text-foreground">{emp.name}</p>
-                      <p className="truncate text-[10px] text-muted-foreground">{emp.department}</p>
+                      <p className="truncate text-[10px] text-muted-foreground">{emp.employeeId}</p>
                     </div>
                   </div>
                   <div className="flex">
                     {days.map((day) => {
-                      const status = getStatusForDay(emp.id, day)
-                      const config = status ? statusConfig[status] : null
+                      const record = getRecordForDay(emp.id, day)
+                      const status = record?.status ?? null
                       const date = new Date(year, month, day)
                       const isWeekend = date.getDay() === 0 || date.getDay() === 6
+                      const hasTimes = record && (record.checkIn || record.checkOut)
                       return (
                         <div
                           key={day}
-                          className={`flex w-10 flex-shrink-0 items-center justify-center border-r border-border py-2 ${
+                          className={`flex min-w-[2.7rem] flex-shrink-0 flex-col items-center justify-center gap-0.5 border-r border-border py-2 ${
                             isWeekend ? "bg-muted/30" : ""
                           }`}
-                          title={`${emp.name} - Day ${day}: ${status || "No data"}`}
+                          title={`${emp.name} - Day ${day}: ${status ?? ""}${hasTimes ? ` | In: ${record.checkIn || "—"} Out: ${record.checkOut || "—"}` : ""}`}
                         >
-                          {config && (
+                          {status && (status === "present" || status === "absent") && (
                             <span
-                              className={`flex h-6 w-6 items-center justify-center rounded text-[10px] font-semibold ${config.color}`}
+                              className={`flex h-6 w-6 items-center justify-center rounded text-[10px] font-semibold ${
+                                statusConfig[status]?.color ?? ""
+                              }`}
                             >
-                              {config.short}
+                              {statusConfig[status]?.short}
                             </span>
+                          )}
+                          {hasTimes && (
+                            <div className="flex flex-col items-center text-[9px] text-muted-foreground leading-tight">
+                              <span>{record.checkIn || "—"}</span>
+                              <span>{record.checkOut || "—"}</span>
+                            </div>
                           )}
                         </div>
                       )
@@ -200,7 +261,9 @@ export function AttendanceMatrix({ selectedMonth }: AttendanceMatrixProps) {
             </div>
           </div>
         </div>
+        )}
       </CardContent>
     </Card>
   )
+  
 }

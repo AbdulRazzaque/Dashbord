@@ -1,103 +1,125 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-import { Card } from "@/components/ui/card";
-
-import { useMemo, useState } from "react";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect, useMemo } from "react";
 import BreadCrumb from "@/components/ui/breadcrumb";
-import { getSingleEmployee } from "@/lib/http/api";
-import SingleEmployeeTable from "@/components/employees/singleEmployeeTable";
+import { EmployeeSelector } from "@/components/report/employee-selector";
+import { AttendanceMatrix } from "@/components/report/attendance-matrix";
+import { EmployeeDayDetailsTable } from "@/components/report/employee-day-details-table";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { getReportMonthlyMatrix, type ReportDailyRecord, type ReportEmployee } from "@/lib/http/api";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 export default function Page() {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all");
   const params = useSearchParams();
   const id = params.get("id");
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [dailyRecords, setDailyRecords] = useState<ReportDailyRecord[]>([]);
+  const [employees, setEmployees] = useState<ReportEmployee[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["getSingleEmployee", id],
-    queryFn: async () => {
-      return await getSingleEmployee(id!).then((res) => res.data);
-    },
-  });
+  const year = selectedMonth.getFullYear();
+  const month = selectedMonth.getMonth();
 
-const employees = data || [];
-
-  // ⭐ frontend filtering + searching
-  const filteredEmployees = useMemo(() => {
-    let result = [...employees];
-
-    // search filter
-    if (search.trim()) {
-      const s = search.toLowerCase();
-      result = result.filter((emp) =>
-        (emp.first_name && emp.first_name.toLowerCase().includes(s)) ||
-        String(emp.emp_code).toLowerCase().includes(s)
-      );
-    }
-
-
-    // status filter
-   if (filter !== "all") {
-  result = result.filter(emp => {
-    const inStatus = emp?.checkIn?.status;
-    const outStatus = emp?.checkOut?.status;
-
-    return inStatus === filter || outStatus === filter;
-  });
-}
-
-
-    return result;
-  }, [employees, search, filter]);
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    setError(null);
+    getReportMonthlyMatrix({
+      year,
+      month,
+      employeeId: id,
+    })
+      .then((res) => {
+        if (res.data?.ok) {
+          setEmployees(res.data.employees ?? []);
+          setDailyRecords(res.data.dailyRecords ?? []);
+        } else {
+          setEmployees([]);
+          setDailyRecords([]);
+        }
+      })
+      .catch((err) => {
+        setError(err?.response?.data?.message ?? "Failed to load attendance");
+        setEmployees([]);
+        setDailyRecords([]);
+      })
+      .finally(() => setLoading(false));
+  }, [id, year, month]);
 
   const breadcrumbItems = [
     { title: "Employees", link: "/dashboard/employees" },
-    { title: "Employee Details", link: "#" },
+    { title: "Employee attendance", link: "#" },
   ];
+
+  if (!id) {
+    return (
+      <div className="container mx-auto py-6 px-4">
+        <BreadCrumb items={breadcrumbItems} />
+        <p className="text-muted-foreground mt-4">
+          No employee selected.{" "}
+          <Link href="/dashboard/employees" className="text-primary underline">
+            Back to Employees
+          </Link>
+        </p>
+      </div>
+    );
+  }
+
+  const initialData = useMemo(
+    () => ({ employees, dailyRecords }),
+    [employees, dailyRecords]
+  );
 
   return (
     <div className="container mx-auto py-6 px-4">
       <BreadCrumb items={breadcrumbItems} />
 
-      <div className="space-y-6">
-        <Card>
-          <div className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-             
-              <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="State filter" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Present">Present</SelectItem>
-                <SelectItem value="Late">Late</SelectItem>
-                <SelectItem value="Checkout">Checkout</SelectItem>
-                <SelectItem value="Early Out">Early Out</SelectItem>
-              </SelectContent>
-            </Select>
-            </div>
-          </div>
-
-          <SingleEmployeeTable
-            data={filteredEmployees}
-            isLoading={isLoading}
-            page={page}
-            setPage={setPage}
-            totalEmployee={filteredEmployees.length}
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <Button variant="ghost" size="sm" className="mb-2 -ml-2 gap-1" asChild>
+            <Link href="/dashboard/employees">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Employees
+            </Link>
+          </Button>
+          <h1 className="text-2xl font-bold text-foreground md:text-3xl">
+            Employee attendance
+          </h1>
+          <p className="text-muted-foreground">
+            Report attendance matrix for employee ID {id}. Change month to view other months.
+          </p>
+        </div>
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+          <EmployeeSelector
+            employees={[]}
+            employeesLoading={false}
+            selectedEmployee={id}
+            onEmployeeChange={() => {}}
+            selectedMonth={selectedMonth}
+            onMonthChange={setSelectedMonth}
+            showEmployeeFilter={false}
           />
-        </Card>
+        </div>
+      </div>
+
+      {error && (
+        <p className="text-destructive mb-4">{error}</p>
+      )}
+
+      <div className="space-y-6">
+        <EmployeeDayDetailsTable
+          dailyRecords={dailyRecords}
+          loading={loading}
+        />
+
+        <AttendanceMatrix
+          selectedMonth={selectedMonth}
+          selectedEmployeeId={id}
+          initialData={initialData}
+        />
       </div>
     </div>
   );

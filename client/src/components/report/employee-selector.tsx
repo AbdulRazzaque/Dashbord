@@ -9,9 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { employees } from "./employee-data"
+import type { ReportEmployee } from "@/lib/http/api"
 
 interface EmployeeSelectorProps {
+  employees: ReportEmployee[]
+  employeesLoading?: boolean
   selectedEmployee: string
   onEmployeeChange: (value: string) => void
   selectedMonth: Date
@@ -20,6 +22,8 @@ interface EmployeeSelectorProps {
 }
 
 export function EmployeeSelector({
+  employees,
+  employeesLoading = false,
   selectedEmployee,
   onEmployeeChange,
   selectedMonth,
@@ -77,11 +81,17 @@ export function EmployeeSelector({
           </SelectTrigger>
           <SelectContent className="max-h-[300px] border-border bg-card">
             <SelectItem value="all">All Employees</SelectItem>
-            {employees.map((emp) => (
-              <SelectItem key={emp.id} value={emp.id}>
-                {emp.name}
-              </SelectItem>
-            ))}
+            {employeesLoading
+              ? (
+                  <SelectItem value="_loading" disabled>
+                    Loading...
+                  </SelectItem>
+                )
+              : employees.map((emp) => (
+                  <SelectItem key={emp.id} value={emp.id}>
+                    {emp.name}
+                  </SelectItem>
+                ))}
           </SelectContent>
         </Select>
       )}

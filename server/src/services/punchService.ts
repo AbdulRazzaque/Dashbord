@@ -231,18 +231,19 @@ async getEmployeeHours(
         raw: firstPunch.raw || {},
       };
 
-      // Cannot use $set and $unset on same path in one update — use only $unset when clearing checkOut
+      // Use Date for date field so EmployeeDay matches AbsentService/cron (getUtcDay()) and report queries
+      const dateAsDate = new Date(dateKey);
       if (finalCheckOut === null) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars -- intentionally omit checkOut for $unset
         const { checkOut: _omit, ...setFields } = dayRecord;
         await EmployeeDayModel.updateOne(
-          { emp_code: Number(empId), date: dateKey },
+          { emp_code: Number(empId), date: dateAsDate },
           { $set: setFields, $unset: { checkOut: 1 } },
           { upsert: true }
         );
       } else {
         await EmployeeDayModel.updateOne(
-          { emp_code: Number(empId), date: dateKey },
+          { emp_code: Number(empId), date: dateAsDate },
           { $set: dayRecord },
           { upsert: true }
         );

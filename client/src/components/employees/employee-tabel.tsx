@@ -140,6 +140,7 @@ export default function EmployeeTable({
                         const id = employee.emp_code;
                         router.push(`/dashboard/employees/view?id=${id}`);
                       }}
+                      title="View attendance"
                     >
                       <Icon icon="heroicons:eye" className="h-4 w-4" />
                     </Button>

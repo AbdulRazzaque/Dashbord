@@ -1,5 +1,78 @@
 import * as XLSX from "xlsx";
 
+export interface ReportEmployeeForExport {
+  id: string;
+  name: string;
+  employeeId: string;
+  emp_code: number;
+}
+
+export interface ReportDailyRecordForExport {
+  date: string;
+  employeeId: string;
+  status: string;
+}
+
+/**
+ * Export attendance matrix to Excel: one row per employee, columns = Name, Employee ID, Emp Code, Day 1 .. Day N.
+ * Only days 1 up to today (for current month) are included; future dates are omitted.
+ * Cell values: P (Present), A (Absent), or blank for other statuses.
+ */
+export function exportAttendanceMatrixToExcel(
+  employees: ReportEmployeeForExport[],
+  dailyRecords: ReportDailyRecordForExport[],
+  year: number,
+  month: number,
+  filenamePrefix = "attendance-report"
+): void {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const now = new Date();
+  const todayYear = now.getFullYear();
+  const todayMonth = now.getMonth();
+  const todayDate = now.getDate();
+  const isFutureMonth = year > todayYear || (year === todayYear && month > todayMonth);
+  const isCurrentMonth = year === todayYear && month === todayMonth;
+  const lastDayToShow = isFutureMonth ? 0 : isCurrentMonth ? todayDate : daysInMonth;
+
+  const recordsByEmployee = new Map<string, Map<number, string>>();
+  for (const r of dailyRecords) {
+    const day = new Date(r.date).getDate();
+    if (!recordsByEmployee.has(r.employeeId)) recordsByEmployee.set(r.employeeId, new Map());
+    recordsByEmployee.get(r.employeeId)!.set(day, r.status);
+  }
+
+  const rows = employees.map((emp) => {
+    const row: Record<string, string | number> = {
+      "Employee Name": emp.name,
+      "Employee ID": emp.employeeId,
+      "Emp Code": emp.emp_code,
+    };
+    for (let d = 1; d <= lastDayToShow; d++) {
+      const status = recordsByEmployee.get(emp.id)?.get(d);
+      row[`Day ${d}`] =
+        status === "present" ? "P" : status === "absent" ? "A" : "";
+    }
+    return row;
+  });
+
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+
+  const headerKeys = rows[0] ? Object.keys(rows[0]) : ["Employee Name", "Employee ID", "Emp Code"];
+  const colWidths = headerKeys.map((k, i) => ({
+    wch: i < 3 ? Math.max(12, k.length) : 6,
+  }));
+  worksheet["!cols"] = colWidths;
+
+  const monthName = new Date(year, month, 1).toLocaleString("default", { month: "short" });
+  const sheetName = `Attendance ${monthName} ${year}`.slice(0, 31);
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+
+  const timestamp = new Date().toISOString().split("T")[0];
+  const finalFilename = `${filenamePrefix}_${monthName}_${year}_${timestamp}.xlsx`;
+  XLSX.writeFile(workbook, finalFilename);
+}
+
 export const exportOrdersToExcel = (orders:any[], filename = "orders") => {
   // Prepare data for Excel export
   const excelData = orders.map((order) => ({

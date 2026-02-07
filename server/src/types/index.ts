@@ -130,3 +130,41 @@ export interface AbsentType {
 }
 
 export interface AbsentSearchOptions extends SearchParams {}
+
+// ----- Report module (frontend Report section) -----
+// Present and absent only (no Leave policy). Weekend is returned for blank cells.
+export type ReportDailyStatus = "present" | "absent" | "weekend";
+
+export interface ReportEmployee {
+  id: string;
+  name: string;
+  employeeId: string;
+  emp_code: number;
+  avatar: string;
+}
+
+export interface ReportDailyRecord {
+  date: string;
+  employeeId: string;
+  checkIn: string;
+  checkOut: string;
+  hoursWorked: number;
+  status: ReportDailyStatus;
+  overtime: number;
+  tasks: number;
+  performance: number;
+}
+
+export interface ReportMonthlyMatrixFilters {
+  search?: string;
+  status?: ReportDailyStatus | "all";
+}
+
+export interface ReportMonthlyMatrixOptions {
+  year: number;
+  month: number;
+  employeeId?: string;
+  filters?: ReportMonthlyMatrixFilters;
+  page?: number;
+  limit?: number;
+}
