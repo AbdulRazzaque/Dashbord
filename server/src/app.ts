@@ -13,6 +13,7 @@ import absentRoutes from "./routes/absentRoutes";
 import reportRoutes from "./routes/reportRoutes";
 // import "../cron/absent.cron";
 import '../src/cron/absent.cron';
+import '../src/cron/syncPunches.cron';
 dotenv.config();
 const app = express();
 // app.use(helmet());
