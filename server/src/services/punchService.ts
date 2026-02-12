@@ -76,14 +76,16 @@ export class PunchService {
       if (!Array.isArray(res.data) || res.data.length === 0) break;
 
       for (const rec of res.data) {
-        if (typeof rec?.id !== "number") continue;
+        const punchId = rec.id ?? rec.punch_id;
+        if (typeof punchId !== "number") continue;
         const toSave: Partial<IPunch> = {
           ...rec,
+          punch_id: punchId,
           punch_time: rec.punch_time ? new Date(rec.punch_time) : null,
           upload_time: rec.upload_time ? new Date(rec.upload_time) : null,
           raw: rec,
         };
-        await PunchModel.updateOne({ punch_id: rec.id }, { $set: toSave }, { upsert: true });
+        await PunchModel.updateOne({ punch_id: punchId }, { $set: toSave }, { upsert: true });
         totalSaved++;
       }
 
@@ -260,14 +262,16 @@ async getEmployeeHours(
     const records = Array.isArray(payload) ? (payload as BioTimePunch[]) : [payload as BioTimePunch];
     let saved = 0;
     for (const rec of records) {
-      if (!rec || typeof rec.id !== "number") continue;
+      const punchId = rec?.id ?? rec?.punch_id;
+      if (!rec || typeof punchId !== "number") continue;
       const toSave: Partial<IPunch> = {
         ...rec,
+        punch_id: punchId,
         punch_time: rec.punch_time ? new Date(rec.punch_time) : null,
         upload_time: rec.upload_time ? new Date(rec.upload_time) : null,
         raw: rec,
       };
-      await PunchModel.updateOne({ id: rec.id }, { $set: toSave }, { upsert: true });
+      await PunchModel.updateOne({ punch_id: punchId }, { $set: toSave }, { upsert: true });
       saved++;
     }
     return saved;
