@@ -35,10 +35,7 @@ export class PunchController {
 
   fetchToday = async (req: Request, res: Response) => {
     try {
-      // Ensure sync from BioTime
-      const saved = await this.punchService.fetchAndSaveTodayPunches();
-
-      // Query params
+      
       const page = Math.max(Number(req.query.page) || 1, 1);
       const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 100);
       const search = (req.query.search as string | undefined)?.trim() || "";
@@ -82,7 +79,7 @@ export class PunchController {
         raw: d.raw,
       }));
       /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-      res.json({ ok: true, saved, page, limit, total, data });
+      res.json({ ok: true, page, limit, total, data });
      
     } catch (err: any) {
       this.logger.error("Error fetching today's punches:", err);
