@@ -4,12 +4,22 @@ import { NextFunction, Request, Response } from "express";
 import logger from "../config/logger";
 import { Config } from "../config";
 
-/** Clear auth cookies so expired/invalid JWT does not leave stale cookies. */
-function clearAuthCookies(res: Response): void {
+const getCookieOpts = (): { path: string; domain?: string } => {
     const opts: { path: string; domain?: string } = { path: "/" };
     if (Config.MAIN_DOMAIN && Config.MAIN_DOMAIN !== "localhost") {
         opts.domain = Config.MAIN_DOMAIN;
     }
+    return opts;
+};
+
+/** Clear only access token so client can still use refresh token to get new tokens. */
+function clearAccessTokenCookie(res: Response): void {
+    res.clearCookie("accessToken", getCookieOpts());
+}
+
+/** Clear both auth cookies (e.g. when refresh fails or on logout). */
+function clearAuthCookies(res: Response): void {
+    const opts = getCookieOpts();
     res.clearCookie("accessToken", opts);
     res.clearCookie("refreshToken", opts);
 }
@@ -29,14 +39,21 @@ export const globalErrorHandler = (
         ? `An unexpected error occurred.`
         : err.message;
 
-    // When JWT is expired or invalid (401 / UnauthorizedError), clear auth cookies so client does not keep sending them
+    // On 401: clear only accessToken so client can call /api/auth/refresh with refreshToken cookie.
+    // If this 401 is from the refresh endpoint itself, refresh token is bad → clear both cookies.
     if (statusCode === 401 || (err as { name?: string }).name === "UnauthorizedError") {
-        clearAuthCookies(res);
+        if (req.path === "/api/auth/refresh" || req.originalUrl?.includes("/api/auth/refresh")) {
+            clearAuthCookies(res);
+        } else {
+            clearAccessTokenCookie(res);
+        }
     }
 
-    logger.error(err.message, {
+    // Log 401 (auth) as warn to avoid noise; other errors as error
+    const logFn = statusCode === 401 ? logger.warn : logger.error;
+    logFn(err.message, {
         id: errorId,
-        error: err.stack,
+        ...(statusCode !== 401 && { error: err.stack }),
         path: req.path,
         method: req.method,
     });
