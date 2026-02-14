@@ -7,10 +7,10 @@ const punchService = new PunchService();
 /**
  * Sync today's punches from BioTime and save/update EmployeeDay records.
  * Runs in the background so data keeps saving even when no one opens the app.
- * Schedule: every 15 minutes (and at server start via poll if enabled).
+ * Schedule: every 15 minutes. One sync also runs on server startup (see server.ts).
  */
 cron.schedule(
-  "*/15 * * * *",
+  "* * * * *",
   async (): Promise<void> => {
     try {
       logger.info("Punch sync cron started");
@@ -32,4 +32,4 @@ cron.schedule(
   }
 );
 
-logger.info("Punch sync cron registered (every 15 minutes)");
+logger.info("Punch sync cron registered (every minute)");

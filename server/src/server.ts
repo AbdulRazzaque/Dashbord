@@ -1,5 +1,3 @@
-// import startPolling from "../utils/poll";
-import { StartPolling } from "../utils/poll";
 import app from "./app";
 import { Config } from "./config";
 import connectDB from "./config/db";
@@ -16,10 +14,11 @@ const startServer = async () => {
         logger.info(`Server running on http://localhost:${PORT}`);
         logger.info(`BioTime URL: ${process.env.BIOTIME_URL}`);
 
-        // ⭐ Correct way to start polling
-        const poller = new StartPolling(logger, new PunchService());
-        poller.start();
-        
+        // Punch sync: cron only (every 15 min via syncPunches.cron). Run once on startup so first sync is immediate.
+        const punchService = new PunchService();
+        punchService.fetchAndSaveTodayPunches().catch((err) => {
+            logger.error("Startup punch sync failed", { message: err instanceof Error ? err.message : err });
+        });
     } catch (error: unknown) {
         if (error instanceof Error) {
             logger.error(error.message);
@@ -28,4 +27,4 @@ const startServer = async () => {
     }
 };
 
-void startServer()
+void startServer();
