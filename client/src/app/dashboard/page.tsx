@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 // import { Counts } from "@/types";
 import AttendanceSummaryTable from "@/components/attendance/attendance-summary-table";
-import { employeeCount, getEmployees, getTodayAttendanceSummary } from "@/lib/http/api";
+import { employeeCount, getAbsentEmployee, getTodayAttendanceSummary } from "@/lib/http/api";
 import {  SummaryRow } from "@/types";
 import { Input } from "@/components/ui/input";
 
@@ -80,21 +80,36 @@ const Page = () => {
     return result;
   }, [employees, search, filter]);
 
-
+  
   /* 
     Get Total Employee count  
   */
-        const {
-          data: employeeData,
-          isLoading: employeeLoading,
-        } = useQuery<number>({
-          queryKey: ["employeeCount"],
-          queryFn: async () => {
-            const res = await employeeCount();
-            return res.data.data; // returning a number
-          },
-        });
-        
+  const {
+    data: employeeData,
+  } = useQuery<number>({
+    queryKey: ["employeeCount"],
+    queryFn: async () => {
+      const res = await employeeCount();
+      return res.data.data;
+    },
+  });
+
+  /* 
+    Get Today's Absent count (from absent API for today's date)
+  */
+  const getTodayStr = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  };
+  const { data: todayAbsentCount = 0 } = useQuery<number>({
+    queryKey: ["todayAbsentCount", getTodayStr()],
+    queryFn: async () => {
+      const today = getTodayStr();
+      const res = await getAbsentEmployee(1, 1, today, today);
+      return (res.data as { pagination?: { total?: number } })?.pagination?.total ?? 0;
+    },
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-4 items-center justify-between">
@@ -113,9 +128,9 @@ const Page = () => {
             <EcommerceStats
               data={{
                 totalEmployee: employeeData ?? 0,
-                TodyPresent: 0,
-                TodyLateEmployee: 0,
-                TodyAbsentEmployee: 0,
+                todayPresent: employees.filter(emp => emp.checkIn?.status === "Present").length,
+                todayLate: employees.filter(emp => emp.checkIn?.status === "Late").length,
+                todayAbsent: todayAbsentCount,
               }}
             />
           </div>

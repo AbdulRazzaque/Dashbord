@@ -70,11 +70,11 @@ const EcommerceStats = ({ data }: Props) => {
           </span>
         </div>
         <span className="mt-3 text-sm text-default-800 dark:text-primary-foreground font-medium capitalize relative z-10">
-          Today Present
+          Today's Present Attendance
         </span>
         <div className="flex items-center gap-1">
           <span className="text-lg font-semibold text-default-900  dark:text-primary-foreground">
-            {/* {data.todaysOrders ? data.todaysOrders : 0} */}
+          {data.todayPresent ?? 0}  
           </span>
           <Icon
             icon="heroicons:arrow-trending-up"
@@ -104,12 +104,11 @@ const EcommerceStats = ({ data }: Props) => {
           </span>
         </div>
         <span className="mt-3 text-sm text-default-800 dark:text-primary-foreground font-medium capitalize relative z-10">
-          Late Employee
+         Today's Late Attendance
         </span>
         <div className="flex items-center gap-1">
           <span className="text-lg font-semibold text-default-900  dark:text-primary-foreground">
-            {/* {data.completedOrders ? data.completedOrders : 0} */}
-            {0}
+            { data.todayLate ?? 0}
           </span>
           <Icon
             icon="heroicons:arrow-trending-up"
@@ -118,13 +117,14 @@ const EcommerceStats = ({ data }: Props) => {
         </div>
       </div>
       <div
+        onClick={() => router.push("/dashboard/absent")}
         className={cn(
-          "flex flex-col gap-1.5 p-4 rounded-sm overflow-hidden   items-start relative before:absolute before:left-1/2 before:-translate-x-1/2 before:bottom-1 before:h-[2px] before:w-9 before:bg-primary/50 dark:before:bg-primary-foreground before:hidden bg-red-50 dark:bg-red-500 "
+          "cursor-pointer flex flex-col gap-1.5 p-4 rounded-sm overflow-hidden items-start relative before:absolute before:left-1/2 before:-translate-x-1/2 before:bottom-1 before:h-[2px] before:w-9 before:bg-primary/50 dark:before:bg-primary-foreground before:hidden bg-red-50 dark:bg-red-500"
         )}
       >
         <span
           className={cn(
-            "h-[95px] w-[95px] rounded-full absolute -top-8 -right-8 ring-[20px]  bg-red-200 ring-red-100 dark:bg-red-300 dark:ring-red-400"
+            "h-[95px] w-[95px] rounded-full absolute -top-8 -right-8 ring-[20px] bg-red-200 ring-red-100 dark:bg-red-300 dark:ring-red-400"
           )}
         ></span>
         <div
@@ -139,12 +139,11 @@ const EcommerceStats = ({ data }: Props) => {
           </span>
         </div>
         <span className="mt-3 text-sm text-default-800 dark:text-primary-foreground font-medium capitalize relative z-10">
-          Absent Employee
+          Today's Absent Attendance
         </span>
         <div className="flex items-center gap-1">
-          <span className="text-lg font-semibold text-default-900  dark:text-primary-foreground">
-            {/* {data.pendingOrders ? data.pendingOrders : 0} */}
-            {0}
+          <span className="text-lg font-semibold text-default-900 dark:text-primary-foreground">
+            {data.todayAbsent ?? 0}
           </span>
           <Icon
             icon="heroicons:arrow-trending-up"

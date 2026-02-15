@@ -82,4 +82,16 @@ export class ReportController {
     }
   };
 
+  getAttendanceChart = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await this.reportService.getAttendanceChartData();
+      res.status(200).json({
+        ok: true,
+        ...result,
+      });
+    } catch (err) {
+      this.logger.error("Report getAttendanceChart error", { error: err });
+      next(err);
+    }
+  };
 }

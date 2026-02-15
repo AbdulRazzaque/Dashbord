@@ -45,12 +45,12 @@ export interface BioTimePunch {
   upload_time?: string;
   [key: string]: any;
 }
-export interface Counts {
+export type Counts = {
   totalEmployee: number;
-  TodyPresent: number;
-  TodyLateEmployee: number;
-  TodyAbsentEmployee: number;
-}
+  todayPresent: number;
+  todayLate: number;
+  todayAbsent: number;
+};
 
 
 export interface Notification {

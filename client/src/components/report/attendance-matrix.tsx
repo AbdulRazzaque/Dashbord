@@ -15,6 +15,7 @@ import { Search, Check, X, Loader2, FileDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getReportMonthlyMatrix, type ReportEmployee, type ReportDailyRecord } from "@/lib/http/api"
 import { exportAttendanceMatrixToExcel } from "@/lib/excel-export"
+import { formatTime12h } from "@/lib/utils"
 
 interface AttendanceMatrixProps {
   selectedMonth: Date
@@ -227,7 +228,7 @@ export function AttendanceMatrix({ selectedMonth, selectedEmployeeId = "all", in
                         <div
                           key={day}
                           className="flex min-w-[2.7rem] flex-shrink-0 flex-col items-center justify-center gap-0.5 border-r border-border py-2"
-                          title={`${emp.name} - Day ${day}: ${status ?? ""}${hasTimes ? ` | In: ${record.checkIn || "—"} Out: ${record.checkOut || "—"}` : ""}`}
+                          title={`${emp.name} - Day ${day}: ${status ?? ""}${hasTimes ? ` | In: ${formatTime12h(record.checkIn || "")} Out: ${formatTime12h(record.checkOut || "")}` : ""}`}
                         >
                           {status && (status === "present" || status === "absent") && (
                             <span
@@ -240,8 +241,8 @@ export function AttendanceMatrix({ selectedMonth, selectedEmployeeId = "all", in
                           )}
                           {hasTimes && (
                             <div className="flex flex-col items-center text-[9px] text-muted-foreground leading-tight">
-                              <span>{record.checkIn || "—"}</span>
-                              <span>{record.checkOut || "—"}</span>
+                              <span>{formatTime12h(record.checkIn || "") || "—"}</span>
+                              <span>{formatTime12h(record.checkOut || "") || "—"}</span>
                             </div>
                           )}
                         </div>

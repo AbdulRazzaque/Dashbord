@@ -270,4 +270,51 @@ export class ReportService {
     };
   }
 
+  /**
+   * Last 12 months aggregated counts for chart: Present, Absent, Late, Early Out.
+   */
+  async getAttendanceChartData(): Promise<{
+    categories: string[];
+    series: { name: string; data: number[] }[];
+  }> {
+    const now = new Date();
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const categories: string[] = [];
+    const presentData: number[] = [];
+    const absentData: number[] = [];
+    const lateData: number[] = [];
+    const earlyOutData: number[] = [];
+
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const year = d.getFullYear();
+      const month = d.getMonth();
+      const start = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0));
+      const end = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999));
+
+      categories.push(monthNames[month]);
+
+      const [present, absent, late, earlyOut] = await Promise.all([
+        EmployeeDayModel.countDocuments({ date: { $gte: start, $lte: end }, status: "Present" }),
+        AbsentModel.countDocuments({ date: { $gte: start, $lte: end } }),
+        EmployeeDayModel.countDocuments({ date: { $gte: start, $lte: end }, "checkIn.status": "Late" }),
+        EmployeeDayModel.countDocuments({ date: { $gte: start, $lte: end }, "checkOut.status": "Early Out" }),
+      ]);
+
+      presentData.push(present);
+      absentData.push(absent);
+      lateData.push(late);
+      earlyOutData.push(earlyOut);
+    }
+
+    return {
+      categories,
+      series: [
+        { name: "Present Employee", data: presentData },
+        { name: "Absent Employee", data: absentData },
+        { name: "Late Employee", data: lateData },
+        { name: "Early Out Employee", data: earlyOutData },
+      ],
+    };
+  }
 }

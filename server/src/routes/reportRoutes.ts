@@ -21,4 +21,10 @@ router.get(
   asyncWrapper(reportController.getMonthlyMatrix)
 );
 
+router.get(
+  "/reports/attendance-chart",
+  authenticate,
+  asyncWrapper(reportController.getAttendanceChart)
+);
+
 export default router;

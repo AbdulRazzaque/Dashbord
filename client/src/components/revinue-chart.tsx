@@ -6,44 +6,47 @@ import { useTheme } from "next-themes";
 import { themes } from "@/config/thems";
 import { getGridConfig, getYAxisConfig } from "@/lib/appex-chart-options";
 import { useQuery } from "@tanstack/react-query";
-import { getRevenue } from "@/lib/http/api";
-import { useEffect, useState } from "react";
+import { getAttendanceChart } from "@/lib/http/api";
+import { useEffect, useMemo, useState } from "react";
+import { Loader2 } from "lucide-react";
 
 interface Series {
   name: string;
   data: number[];
 }
 
+const defaultSeries: Series[] = [
+  { name: "Present Employee", data: [] },
+  { name: "Absent Employee", data: [] },
+  { name: "Late Employee", data: [] },
+  { name: "Early Out Employee", data: [] },
+];
+
+const defaultCategories = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 const RevinueChart = ({ height = 350 }) => {
   const { theme: config, setTheme: setConfig, isRtl } = useThemeStore();
   const { theme: mode } = useTheme();
   const theme = themes.find((theme) => theme.name === config);
-  const [series, setData] = useState<Series[]>([
-    {
-      name: "Late Employee",
-      data: [44, 55, 41, 37, 22, 43, 21, 40, 30, 50, 60, 50],
-    },
-    {
-      name: "Absent Employee",
-      data: [53, 32, 33, 52, 13, 43, 32, 40, 50, 20, 40, 50],
-    },
-    {
-      name: "Return",
-      data: [40, 47, 51, 39, 35, 51, 60, 40, 60, 30, 20, 60],
-    },
-  ]);
+  const [categories, setCategories] = useState<string[]>(defaultCategories);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["getRevenue"],
+    queryKey: ["attendanceChart"],
     queryFn: async () => {
-      return await getRevenue().then((res) => res.data);
+      const res = await getAttendanceChart();
+      return res.data;
     },
   });
 
   useEffect(() => {
-    if (data) {
-      setData(data.series);
+    if (data?.ok && data?.categories?.length) {
+      setCategories(data.categories);
     }
+  }, [data]);
+
+  const series = useMemo<Series[]>(() => {
+    if (data?.ok && data?.series?.length) return data.series;
+    return defaultSeries;
   }, [data]);
 
  
@@ -97,6 +100,7 @@ const RevinueChart = ({ height = 350 }) => {
       `hsl(${theme?.cssVars[mode === "dark" ? "dark" : "light"].primary})`,
       `hsl(${theme?.cssVars[mode === "dark" ? "dark" : "light"].info})`,
       `hsl(${theme?.cssVars[mode === "dark" ? "dark" : "light"].warning})`,
+      `hsl(${theme?.cssVars[mode === "dark" ? "dark" : "light"].destructive})`,
     ],
     tooltip: {
       theme: mode === "dark" ? "dark" : "light",
@@ -108,20 +112,7 @@ const RevinueChart = ({ height = 350 }) => {
       `hsl(${theme?.cssVars[mode === "dark" ? "dark" : "light"].chartLabel})`
     ),
     xaxis: {
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "July",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
+      categories,
       axisBorder: {
         show: false,
       },
@@ -164,6 +155,14 @@ const RevinueChart = ({ height = 350 }) => {
       },
     },
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center" style={{ height }}>
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <Chart

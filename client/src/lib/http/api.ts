@@ -108,9 +108,15 @@ export const markNotification = (id: string) =>
   api.patch(`/api/notifications/${id}/read`);
 
 /* 
-  Revenue API
+  Attendance chart API (last 12 months: Present, Absent, Late, Early Out)
 */
-export const getRevenue = () => api.get(`/api/revenue`);
+export interface AttendanceChartResponse {
+  ok: boolean;
+  categories: string[];
+  series: { name: string; data: number[] }[];
+}
+export const getAttendanceChart = () =>
+  api.get<AttendanceChartResponse>(`/api/reports/attendance-chart`);
 
 /* 
   Search API

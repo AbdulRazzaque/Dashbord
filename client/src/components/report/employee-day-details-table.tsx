@@ -11,6 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { ReportDailyRecord } from "@/lib/http/api";
+import { formatTime12h } from "@/lib/utils";
 import { Clock, LogIn, LogOut } from "lucide-react";
 
 interface EmployeeDayDetailsTableProps {
@@ -126,10 +127,10 @@ export function EmployeeDayDetailsTable({
                       {formatDate(record.date)}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {record.checkIn || "—"}
+                      {formatTime12h(record.checkIn || "") || "—"}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {record.checkOut || "—"}
+                      {formatTime12h(record.checkOut || "") || "—"}
                     </TableCell>
                     <TableCell className="font-medium">
                       {formatHours(record.hoursWorked)}

@@ -75,8 +75,9 @@ const AbsentPage = () => {
     },
   });
 
-
+  
   const employees = data?.data || [];
+  console.log("employees", data?.pagination.total)    
   const pagination = data?.pagination;
 
   // ⭐ frontend filtering + searching

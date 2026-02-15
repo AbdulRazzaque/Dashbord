@@ -110,6 +110,19 @@ export const formatTime = (time: number | Date | string): string => {
   return formattedTime;
 };
 
+/** Convert 24h time string (e.g. "06:07", "16:17") to 12h with AM/PM (e.g. "6:07 AM", "4:17 PM"). */
+export function formatTime12h(time24: string): string {
+  if (!time24 || time24 === "—") return time24;
+  const parts = time24.trim().split(":");
+  const h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1] ?? "0", 10);
+  if (isNaN(h)) return time24;
+  
+  const h12 = h % 12 || 12;
+  const min = isNaN(m) ? "00" : String(m).padStart(2, "0");
+  return `${h12}:${min}`;
+}
+
 // object check
 export function isObjectNotEmpty(obj: any): boolean {
   if (typeof obj !== "object" || obj === null) {
