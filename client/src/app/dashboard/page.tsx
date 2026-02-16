@@ -70,9 +70,11 @@ const Page = () => {
     // status filter
     if (filter !== "all") {
       result = result.filter((emp) => {
+        if (filter === "No Check In") {
+          return emp?.checkIn == null;
+        }
         const inStatus = emp?.checkIn?.status;
         const outStatus = emp?.checkOut?.status;
-
         return inStatus === filter || outStatus === filter;
       });
     }
@@ -128,7 +130,17 @@ const Page = () => {
             <EcommerceStats
               data={{
                 totalEmployee: employeeData ?? 0,
-                todayPresent: employees.filter(emp => emp.checkIn?.status === "Present").length,
+                todayPresent: employees.filter(
+                  (emp) =>
+                    (emp.status === "Present") ||
+                    (emp.status == null
+                       && emp.checkIn != null
+                        && (emp.checkIn.status === "Present"
+                           || emp.checkIn.status === "Late")
+                           || emp.checkIn == null
+                           && (emp.checkOut == null || emp.checkOut.status === "Checkout" || emp.checkOut.status === "Early Out")
+                          )
+                ).length,
                 todayLate: employees.filter(emp => emp.checkIn?.status === "Late").length,
                 todayAbsent: todayAbsentCount,
               }}
@@ -175,6 +187,7 @@ const Page = () => {
                     <SelectItem value="Late">Late</SelectItem>
                     <SelectItem value="Checkout">Checkout</SelectItem>
                     <SelectItem value="Early Out">Early Out</SelectItem>
+                    <SelectItem value="No Check In">No Check In</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

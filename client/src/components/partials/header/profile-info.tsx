@@ -51,7 +51,9 @@ const ProfileInfo = () => {
     if (logged.type === "success") {
       logoutSession();
       toast.success("Successfully logged out");
-      router.push("/");
+      // Full reload so login page renders cleanly (avoids blank page after client-side logout)
+      window.location.href = "/";
+      return;
     }
 
     if (logged.type === "error") {

@@ -22,30 +22,20 @@ export const logoutAction = async () => {
     };
   }
 
-  // Delete cookies with more specific options
-  cookies().delete({
-    name: "accessToken",
-    domain: process.env.MAIN_DOMAIN,
+  // Delete cookies. Omit domain for localhost so host-only cookies are cleared.
+  const cookieOpts: { name: string; path: string; domain?: string; secure?: boolean; sameSite: "lax" } = {
+    name: "",
     path: "/",
-    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-  });
+  };
+  if (process.env.NODE_ENV === "production" && process.env.MAIN_DOMAIN && process.env.MAIN_DOMAIN !== "localhost") {
+    cookieOpts.domain = process.env.MAIN_DOMAIN;
+    cookieOpts.secure = true;
+  }
 
-  cookies().delete({
-    name: "refreshToken",
-    domain: process.env.MAIN_DOMAIN,
-    path: "/",
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-  });
-
-  cookies().delete({
-    name: "userRole",
-    domain: process.env.MAIN_DOMAIN,
-    path: "/",
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-  });
+  cookies().delete({ ...cookieOpts, name: "accessToken" });
+  cookies().delete({ ...cookieOpts, name: "refreshToken" });
+  cookies().delete({ ...cookieOpts, name: "userRole" });
 
   return {
     type: "success",

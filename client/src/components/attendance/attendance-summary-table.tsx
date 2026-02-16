@@ -34,11 +34,14 @@ const getStatusColor = (status: string) => {
     case "Present":
       return "bg-green-100 text-green-800 border border-green-200";
     case "Out":
+    case "Checkout":
       return "bg-blue-100 text-blue-800 border border-blue-200";
     case "Late":
       return "bg-yellow-100 text-yellow-800 border border-yellow-200";
     case "Early Out":
       return "bg-orange-100 text-orange-800 border border-orange-200";
+    case "No Check In":
+      return "bg-gray-100 text-gray-600 border border-gray-300";
     default:
       return "bg-gray-100 text-gray-800 border border-gray-200";
   }
@@ -128,9 +131,9 @@ export default function AttendanceSummaryTable({
                   <TableCell className="flex flex-col  w-max">
                     <div
                       className={`inline-flex px-2 py-1 mb-1 text-xs font-semibold rounded-full 
-                ${getStatusColor(employee?.checkIn?.status || "No Status")}`}
+                ${getStatusColor(employee?.checkIn?.status ?? "No Check In")}`}
                     >
-                      {employee?.checkIn?.status || ""}
+                      {employee?.checkIn?.status ?? "No Check In"}
                     </div>
                     {employee.checkOut && employee.checkOut.time !== employee.checkIn?.time && (
                     <div
