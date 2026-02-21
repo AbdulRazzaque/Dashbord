@@ -268,5 +268,31 @@ export class PunchController {
     }
   };
 
- 
+  manualPunch = async (req: Request, res: Response) => {
+    try {
+      const { emp_code, date, checkInTime, checkOutTime } = req.body as {
+        emp_code?: number;
+        date?: string;
+        checkInTime?: string;
+        checkOutTime?: string;
+      };
+      if (typeof emp_code !== "number" || !date || !checkInTime) {
+        return res.status(400).json({
+          ok: false,
+          message: "emp_code (number), date (YYYY-MM-DD), and checkInTime (HH:mm) are required.",
+        });
+      }
+      const result = await this.punchService.addManualPunch({
+        emp_code,
+        date: String(date).trim(),
+        checkInTime: String(checkInTime).trim(),
+        checkOutTime: checkOutTime ? String(checkOutTime).trim() : undefined,
+      });
+      res.json({ ok: true, ...result });
+    } catch (err: unknown) {
+      this.logger.error("Manual punch error:", err);
+      const message = err instanceof Error ? err.message : "Unknown error";
+      res.status(500).json({ ok: false, message });
+    }
+  };
 }

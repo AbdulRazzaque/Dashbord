@@ -199,6 +199,16 @@ export class AbsentService {
     };
   }
   
+  /** Remove absent record for an employee on a given date (e.g. after manual punch added). */
+  async removeAbsentForEmployee(empCode: number, date: Date): Promise<{ deleted: number }> {
+    const utcDay = getUtcDay(date);
+    const result = await AbsentModel.deleteOne({
+      emp_code: empCode,
+      date: utcDay,
+    });
+    return { deleted: result.deletedCount ?? 0 };
+  }
+
   async SingleAbsentEmployee(empCode: any) {
     const absents = await AbsentModel.find({
       emp_code: Number(empCode),

@@ -1,9 +1,11 @@
-
 import { bioGet } from "../bioClient";
 import PunchModel, { IPunch } from "../models/PunchModel";
-import { BioTimePunch,EmployeeDay, FetchPunchesOptions, TimeStatus } from "../types";
+import { BioTimePunch, EmployeeDay, FetchPunchesOptions, TimeStatus } from "../types";
 import logger from "../config/logger";
 import { EmployeeDayModel } from "../models/EmployeeDay";
+import { EmployeeService } from "./EmployeeService";
+import { AbsentService } from "./AbsentService";
+import { getUtcDay } from "../../utils/dateUtils";
 
 
 // Helper function to safely extract employee name as string
@@ -275,6 +277,81 @@ async getEmployeeHours(
       saved++;
     }
     return saved;
+  };
+
+  /** Manual add punch: save check-in (and optional check-out), update EmployeeDay, remove from absent. */
+  addManualPunch = async (params: {
+    emp_code: number;
+    date: string; // YYYY-MM-DD
+    checkInTime: string; // HH:mm
+    checkOutTime?: string; // HH:mm optional
+  }): Promise<{ punchesSaved: number; absentRemoved: number }> => {
+    const { emp_code, date, checkInTime, checkOutTime } = params;
+    const employeeService = new EmployeeService();
+    const absentService = new AbsentService();
+    const [y, m, d] = date.split("-").map(Number);
+    if (!y || !m || !d) {
+      throw new Error("Invalid date format. Use YYYY-MM-DD.");
+    }
+    // Use local date/time so 12:00 PM stays 12:00 PM when displayed (formatTime uses toLocaleTimeString)
+    const parseTime = (time: string): Date => {
+      const [hh, mm] = time.split(":").map(Number);
+      return new Date(y, m - 1, d, hh || 0, mm || 0, 0, 0);
+    };
+    const baseDay = new Date(y, m - 1, d, 0, 0, 0, 0);
+    const checkInDate = parseTime(checkInTime);
+    const checkOutDate = checkOutTime ? parseTime(checkOutTime) : null;
+    const res = await employeeService.getEmployees();
+    const employees = (res?.data ?? []) as Array<{ emp_code: number; first_name: string }>;
+    const emp = employees.find((e) => e.emp_code === emp_code);
+    const first_name = emp?.first_name ?? "Unknown";
+    const baseId = -Math.floor(Date.now() * 1000);
+    const rawBase: BioTimePunch = {
+      punch_id: baseId,
+      emp_code,
+      first_name,
+      punch_time: checkInDate.toISOString(),
+      punch_state_display: "Check In",
+      raw: {} as BioTimePunch,
+    };
+    const toSaveIn: Partial<IPunch> = {
+      punch_id: baseId,
+      emp_code,
+      first_name,
+      punch_time: checkInDate,
+      upload_time: new Date(),
+      raw: rawBase,
+    };
+    await PunchModel.updateOne({ punch_id: baseId }, { $set: toSaveIn }, { upsert: true });
+    let punchesSaved = 1;
+    if (checkOutDate && checkOutDate.getTime() > checkInDate.getTime()) {
+      const outId = baseId - 1;
+      const rawOut: BioTimePunch = {
+        ...rawBase,
+        punch_id: outId,
+        punch_time: checkOutDate.toISOString(),
+        punch_state_display: "Check Out",
+      };
+      const toSaveOut: Partial<IPunch> = {
+        punch_id: outId,
+        emp_code,
+        first_name,
+        punch_time: checkOutDate,
+        upload_time: new Date(),
+        raw: rawOut,
+      };
+      await PunchModel.updateOne({ punch_id: outId }, { $set: toSaveOut }, { upsert: true });
+      punchesSaved = 2;
+    }
+    const start = new Date(baseDay);
+    const end = new Date(baseDay.getTime() + 24 * 60 * 60 * 1000 - 1);
+    await this.getEmployeeHours({
+      start_time: start.toISOString(),
+      end_time: end.toISOString(),
+    });
+    const utcDayForAbsent = getUtcDay(new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0)));
+    const { deleted } = await absentService.removeAbsentForEmployee(emp_code, utcDayForAbsent);
+    return { punchesSaved, absentRemoved: deleted };
   };
 
   searchEmployeeDash = async (userId: string, search: string, filter: string) => {

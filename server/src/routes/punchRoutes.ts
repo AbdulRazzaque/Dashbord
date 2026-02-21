@@ -36,6 +36,10 @@ router.post(
     asyncWrapper(punchController.webhookPunch),
 );
 
-
+router.post(
+    "/manual",
+    authenticate,
+    asyncWrapper(punchController.manualPunch),
+);
 
 export default router;

@@ -149,6 +149,16 @@ export const getTodayAttendanceSummary = (
 ) => {return api.get(`/api/hours`);
 }
 
+export interface AddManualPunchPayload {
+  emp_code: number;
+  date: string; // YYYY-MM-DD
+  checkInTime: string; // HH:mm
+  checkOutTime?: string; // HH:mm
+}
+
+export const addManualPunch = (payload: AddManualPunchPayload) =>
+  api.post<{ ok: boolean; punchesSaved: number; absentRemoved: number }>(`/api/manual`, payload);
+
 export const searchEmployee = (search: string, filter: string) =>
   api.get(`/api/search/dash?q=${search}&filter=${filter}`);
 
