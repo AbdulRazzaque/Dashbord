@@ -203,14 +203,7 @@ const AttendancePage = () => {
                 </SelectContent>
               </Select>
             </div>
-            <Button
-              type="button"
-              onClick={() => setManualOpen(true)}
-              className="gap-2 flex-shrink-0 min-w-[180px] bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4" />
-              Manual Add Punch
-            </Button>
+           
           </div>
         </div>
         <AttendanceSummaryTable
@@ -239,7 +232,7 @@ const AttendancePage = () => {
                     setEmployeeSearch(e.target.value);
                     setShowSuggestions(true);
                   }}
-                  onFocus={() => setShowSuggestions(true)}
+                  // onFocus={() => setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   className="w-full"
                   autoComplete="off"

@@ -25,6 +25,8 @@ interface AttendanceMatrixProps {
     employees: ReportEmployee[]
     dailyRecords: ReportDailyRecord[]
   }
+  /** When true, hide the status filter (e.g. when parent page has its own status filter) */
+  hideStatusFilter?: boolean
 }
 
 const statusConfig: Record<string, { icon: typeof Check; color: string; short: string }> = {
@@ -32,7 +34,7 @@ const statusConfig: Record<string, { icon: typeof Check; color: string; short: s
   absent: { icon: X, color: "bg-red-500/20 text-red-400", short: "A" },
 }
 
-export function AttendanceMatrix({ selectedMonth, selectedEmployeeId = "all", initialData }: AttendanceMatrixProps) {
+export function AttendanceMatrix({ selectedMonth, selectedEmployeeId = "all", initialData, hideStatusFilter = false }: AttendanceMatrixProps) {
   const [searchTerm, setSearchTerm] = useState("")
 
   const [statusFilter, setStatusFilter] = useState("all")
@@ -152,16 +154,18 @@ export function AttendanceMatrix({ selectedMonth, selectedEmployeeId = "all", in
                 className="w-48 bg-secondary pl-9"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-36 bg-secondary">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="present">Present</SelectItem>
-                <SelectItem value="absent">Absent</SelectItem>
-              </SelectContent>
-            </Select>
+            {!hideStatusFilter && (
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-36 bg-secondary">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="present">Present</SelectItem>
+                  <SelectItem value="absent">Absent</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           </div>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3">

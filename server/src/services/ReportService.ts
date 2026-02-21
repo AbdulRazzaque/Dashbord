@@ -246,27 +246,28 @@ export class ReportService {
       }
     }
 
+    let recordsToUse = dailyRecords;
     if (filters?.status && filters.status !== "all") {
-      const empIdsWithStatus = new Set(
-        dailyRecords.filter((r) => r.status === filters.status).map((r) => r.employeeId)
-      );
+      const statusFilter = filters.status;
+      recordsToUse = dailyRecords.filter((r) => r.status === statusFilter);
+      const empIdsWithStatus = new Set(recordsToUse.map((r) => r.employeeId));
       employees = employees.filter((e) => empIdsWithStatus.has(String(e.emp_code)));
     }
 
     let paginatedEmployees = employees;
-    let recordsForPage = dailyRecords;
+    let recordsForPage = recordsToUse;
     if (limit != null && limit > 0) {
       const skip = (page - 1) * limit;
       paginatedEmployees = employees.slice(skip, skip + limit);
       const paginatedIds = new Set(paginatedEmployees.map((e) => String(e.emp_code)));
-      recordsForPage = dailyRecords.filter((r) => paginatedIds.has(r.employeeId));
+      recordsForPage = recordsToUse.filter((r) => paginatedIds.has(r.employeeId));
     }
 
     return {
       employees: paginatedEmployees,
       dailyRecords: recordsForPage,
       totalEmployees: employees.length,
-      totalRecords: dailyRecords.length,
+      totalRecords: recordsToUse.length,
     };
   }
 

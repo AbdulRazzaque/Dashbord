@@ -6,19 +6,32 @@ import BreadCrumb from "@/components/ui/breadcrumb";
 import { EmployeeSelector } from "@/components/report/employee-selector";
 import { AttendanceMatrix } from "@/components/report/attendance-matrix";
 import { EmployeeDayDetailsTable } from "@/components/report/employee-day-details-table";
+import SingleAbsentEmployeeTable from "@/components/absent/singleAbsnetEmployeeTable";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getReportMonthlyMatrix, type ReportDailyRecord, type ReportEmployee } from "@/lib/http/api";
+import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { getReportMonthlyMatrix, singleAbsentEmployee, type ReportDailyRecord, type ReportEmployee } from "@/lib/http/api";
+import type { AbsentEmployee } from "@/types";
 
 export default function Page() {
   const params = useSearchParams();
   const id = params.get("id");
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dailyRecords, setDailyRecords] = useState<ReportDailyRecord[]>([]);
   const [employees, setEmployees] = useState<ReportEmployee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [absentData, setAbsentData] = useState<AbsentEmployee[]>([]);
+  const [absentLoading, setAbsentLoading] = useState(true);
 
   const year = selectedMonth.getFullYear();
   const month = selectedMonth.getMonth();
@@ -31,6 +44,7 @@ export default function Page() {
       year,
       month,
       employeeId: id,
+      status: statusFilter !== "all" ? statusFilter : undefined,
     })
       .then((res) => {
         if (res.data?.ok) {
@@ -47,7 +61,16 @@ export default function Page() {
         setDailyRecords([]);
       })
       .finally(() => setLoading(false));
-  }, [id, year, month]);
+  }, [id, year, month, statusFilter]);
+
+  useEffect(() => {
+    if (!id) return;
+    setAbsentLoading(true);
+    singleAbsentEmployee(id)
+      .then((res) => setAbsentData(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setAbsentData([]))
+      .finally(() => setAbsentLoading(false));
+  }, [id]);
 
   const breadcrumbItems = [
     { title: "Employees", link: "/dashboard/employees" },
@@ -74,7 +97,7 @@ export default function Page() {
   );
 
   return (
-    <div className=" mx-auto py-6 px-4">
+    <div className="mx-auto py-6 px-4">
       <BreadCrumb items={breadcrumbItems} />
 
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -89,10 +112,10 @@ export default function Page() {
             Employee attendance
           </h1>
           <p className="text-muted-foreground">
-            Report attendance matrix for employee ID {id}. Change month to view other months.
+            Attendance and absent records for employee ID {id}. Change month to view other months.
           </p>
         </div>
-        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
           <EmployeeSelector
             employees={[]}
             employeesLoading={false}
@@ -102,6 +125,16 @@ export default function Page() {
             onMonthChange={setSelectedMonth}
             showEmployeeFilter={false}
           />
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[160px] bg-card">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="present">Present</SelectItem>
+              <SelectItem value="absent">Absent</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -109,14 +142,34 @@ export default function Page() {
         <p className="text-destructive mb-4">{error}</p>
       )}
 
-      <div className="">
-        
+      <div className="space-y-6">
+        <div>
+          <AttendanceMatrix
+            selectedMonth={selectedMonth}
+            selectedEmployeeId={id}
+            initialData={initialData}
+            hideStatusFilter
+          />
+        </div>
 
-        <AttendanceMatrix
-          selectedMonth={selectedMonth}
-          selectedEmployeeId={id}
-          initialData={initialData}
-        />
+        <Card className="overflow-hidden">
+          <div className="p-4 border-b bg-muted/30">
+            <h2 className="text-lg font-semibold">Attendance</h2>
+            <p className="text-sm text-muted-foreground">Day-wise check in / out and hours for the selected month.</p>
+          </div>
+          <EmployeeDayDetailsTable
+            dailyRecords={dailyRecords}
+            loading={loading}
+            embedded
+          />
+          <div className="flex items-center justify-between p-4 border-t text-sm text-muted-foreground">
+            <span>
+              Showing {loading ? 0 : dailyRecords.length} attendance record{dailyRecords.length !== 1 ? "s" : ""} for this month.
+            </span>
+          </div>
+        </Card>
+
+        
       </div>
     </div>
   );

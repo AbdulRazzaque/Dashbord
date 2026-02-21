@@ -32,47 +32,49 @@ export default function SingleAbsentEmployeeTable({
   rowsPerPage = 50,
   totalEmployee = 0,
 }: Props) {
-  console.log(data,'data')
+
+
   return (
     <div className="w-full">
       <div className="overflow-x-auto">
       <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Sr No</TableHead>
-              <TableHead>Employee</TableHead>
-              <TableHead>Employee ID</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Reason</TableHead>
-              <TableHead>Status</TableHead>
-
-              <TableHead>Actions</TableHead>
+            <TableRow className="border-border bg-muted/50 hover:bg-muted/50">
+              <TableHead className="font-semibold">Sr No</TableHead>
+              <TableHead className="font-semibold">Employee</TableHead>
+              <TableHead className="font-semibold">Employee ID</TableHead>
+              <TableHead className="font-semibold">Date</TableHead>
+              <TableHead className="font-semibold">Reason</TableHead>
+              <TableHead className="font-semibold">Status</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-4">
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-4">
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   No absent records found
                 </TableCell>
               </TableRow>
             ) : (
               data.map((employee, index) => (
-                <TableRow key={`${employee.emp_code}-${employee.date}-${index}`}>
+                <TableRow
+                  key={`${employee.emp_code}-${employee.date}-${index}`}
+                  className="hover:bg-muted/30"
+                >
                   <TableCell className="font-medium text-card-foreground/80">
                     {(page - 1) * rowsPerPage + index + 1}
                   </TableCell>
                   <TableCell className="font-medium text-card-foreground/80">
                     <div className="flex gap-3 items-center">
-                      <Avatar className="rounded-full">
-                        <AvatarFallback>
+                      <Avatar className="rounded-full h-8 w-8">
+                        <AvatarFallback className="text-xs">
                           {(employee.first_name || "NA")
                             .split(" ")
                             .map((n: string) => n[0])
@@ -81,32 +83,24 @@ export default function SingleAbsentEmployeeTable({
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-sm text-card-foreground">
-                        {employee.first_name  || "NA"}
+                        {employee.first_name || "NA"}
                       </span>
                     </div>
                   </TableCell>
-
                   <TableCell className="font-medium text-card-foreground/80">
                     {employee.emp_code}
                   </TableCell>
                   <TableCell className="font-medium text-card-foreground/80">
-                    {/* {new Date(employee.date).toDateString() || "N/A"} */}
                     {formatDate(employee.date) || "N/A"}
-
                   </TableCell>
                   <TableCell className="font-medium text-card-foreground/80">
                     {employee.reason || "N/A"}
                   </TableCell>
-                  <TableCell className="font-medium text-card-foreground/80">
-                    {employee.status || "N/A"}
+                  <TableCell>
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full border bg-red-100 text-red-800 border-red-200">
+                      {employee.status || "Absent"}
+                    </span>
                   </TableCell>
-                  <TableCell className="flex">
-                  <div className="flex gap-3">
-                 
-                 
-                   
-                  </div>
-                </TableCell>
                 </TableRow>
               ))
             )}
