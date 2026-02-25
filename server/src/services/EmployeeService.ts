@@ -3,50 +3,63 @@ import { EmployeeDayModel } from "../models/EmployeeDay";
 
 import EmployeeModel from "../models/EmployeeModel";
 import PunchModel from "../models/PunchModel";
-import { IEmployee, SearchParams, BioTimeResponse } from "../types";
+import { IEmployee, SearchParams } from "../types";
+
+interface BioTimeEmployeeRaw {
+  emp_code?: number | string;
+  id?: number | string;
+  employee_no?: number | string;
+  first_name?: string;
+  emp_name?: string;
+  name?: string;
+  [key: string]: unknown;
+}
 
 export class EmployeeService{
 
 async getEmployees() {
-    let allEmployees: IEmployee[] = [];
+    let allEmployees: BioTimeEmployeeRaw[] = [];
     let nextUrl: string | null = "/personnel/api/employee/";
 
-    // 1️⃣ ZKTeco se employees lao
+    // 1️⃣ BioTime /personnel/api/employee/ se saari employees lao (pagination handle)
     while (nextUrl) {
-      const res: BioTimeResponse<IEmployee> = await bioGet(nextUrl);
-      allEmployees = allEmployees.concat(res.data);
-      nextUrl = res.next;
+      const res = await bioGet<BioTimeEmployeeRaw>(nextUrl);
+      const raw = res as { data?: BioTimeEmployeeRaw[]; results?: BioTimeEmployeeRaw[]; next?: string | null };
+      const list = Array.isArray(raw.data) ? raw.data : Array.isArray(raw.results) ? raw.results : [];
+      allEmployees = allEmployees.concat(list);
+      nextUrl = raw.next && String(raw.next).trim() ? raw.next : null;
     }
 
     if (!allEmployees.length) {
       return { count: 0, data: [] };
     }
 
-    // 2️⃣ emp_code normalize + map
+    // 2️⃣ emp_code: BioTime me emp_code ya id dono ho sakte hain; normalize + map
     const zktEmployees = allEmployees
-      .map(emp => ({
-        emp_code: emp.emp_code ? Number(emp.emp_code) : null,
-        first_name: emp.first_name,
-        raw: emp,
-      }))
+      .map((emp: BioTimeEmployeeRaw) => {
+        const code = emp.emp_code ?? emp.id ?? emp.employee_no;
+        const num = code != null ? Number(code) : NaN;
+        const name = emp.first_name ?? emp.emp_name ?? emp.name ?? "";
+        if (Number.isNaN(num) || num < 0) return null;
+        return { emp_code: num, first_name: String(name), raw: emp };
+      })
       .filter(
-        (e): e is { emp_code: number; first_name: string; raw: any } =>
-          typeof e.emp_code === "number"
+        (e): e is { emp_code: number; first_name: string; raw: BioTimeEmployeeRaw } => e != null
       );
 
     const empCodes = zktEmployees.map(e => e.emp_code);
 
-    // 3️⃣ Local DB se existing employees lao (ONE QUERY)
+    // 3️⃣ Local DB se existing employees lao
     const localEmployees = await EmployeeModel.find(
       { emp_code: { $in: empCodes } },
       { emp_code: 1, isExcluded: 1, isDeleted: 1 }
     ).lean();
 
-    const localMap = new Map(
+    const localMap = new Map<number, { emp_code: number; isExcluded?: boolean; isDeleted?: boolean }>(
       localEmployees.map(e => [e.emp_code, e])
     );
 
-    // 4️⃣ Upsert employees (MIN fields + RAW)
+    // 4️⃣ Upsert: jo BioTime me hain unhe DB me create/update (isDeleted: false)
     await Promise.all(
       zktEmployees.map(emp =>
         EmployeeModel.updateOne(
@@ -63,18 +76,32 @@ async getEmployees() {
       )
     );
 
+    // 4b️⃣ Jo BioTime me nahi hain unhe DB me isDeleted: true mark karo (soft delete)
+    // await EmployeeModel.updateMany(
+    //   { emp_code: { $nin: empCodes } },
+    //   { $set: { isDeleted: true } }
+    // );
+    await EmployeeModel.updateMany(
+      {
+        isDeleted: false,
+        emp_code: { $nin: empCodes }
+      },
+      {
+        $set: { isDeleted: true }
+      }
+    );
     // 5️⃣ Final response (merge flags)
-    const finalList:IEmployee[] = zktEmployees.map(emp => {
+    const finalList: IEmployee[] = zktEmployees.map(emp => {
       const local = localMap.get(emp.emp_code);
-
-       return {
-      id: emp.raw?.id ?? 0,
-    emp_code: emp.emp_code,
-    first_name: emp.first_name,
-    isExcluded: local?.isExcluded ?? false, // ✅ ADD THIS
-    isDeleted: local?.isDeleted ?? false,
-    raw: emp.raw, // ✅ SAFE: no spread, no any issue
-    };
+      const rawId = emp.raw?.id;
+      return {
+        id: typeof rawId === "number" ? rawId : Number(rawId) || 0,
+        emp_code: emp.emp_code,
+        first_name: emp.first_name,
+        isExcluded: local?.isExcluded ?? false,
+        isDeleted: local?.isDeleted ?? false,
+        raw: emp.raw,
+      } as IEmployee;
     });
 
     return {
@@ -155,7 +182,7 @@ async isExclude(empCode: number) {
 }
 
 async getEmployeeCount(): Promise<number> {
-  return await EmployeeModel.countDocuments();
+  return await EmployeeModel.countDocuments({ isDeleted: { $ne: true } });
 }
 
 }
